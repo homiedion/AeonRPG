@@ -1,3 +1,11 @@
+.settings/
+.classpath
+pom.xml
+.project
+target/
+.gitignore
+.gitattributes
+
 # Compiled class file
 *.class
 
