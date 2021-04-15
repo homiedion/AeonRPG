@@ -1,6 +1,7 @@
 package com.gmail.alexdion93.aeonrpg;
 
 import org.bukkit.Bukkit;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.event.HandlerList;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -49,18 +50,21 @@ public class AeonRPG extends JavaPlugin {
   /*
    * Initializes variables
    */
-  public void init() {
+  private void init() {
     RPGDataUtil.init(this);
     typeManager = new RPGTypeManager(this);
     recipeManager = new RPGRecipeManager();
-    arrowListener = new ArrowFireListener(typeManager);
+    arrowListener = new ArrowFireListener(this);
     potionListener = new PotionApplyListener(typeManager.getPotionEffectManager());
   }
 
   /**
    * Loads the plugin's configuration
    */
-  public void load() {
+  private void load() {
+    if (openPluginFile("config.yml") == null) {
+      saveResource("config.yml", false);
+    }
   }
 
   /*
@@ -84,10 +88,24 @@ public class AeonRPG extends JavaPlugin {
     schedule();
   }
 
+  /**
+   * Fetches a plugin file and returns it.
+   * @param filename The target file name
+   * @return The configuration file.
+   */
+  public YamlConfiguration openPluginFile(String filename) {
+    YamlConfiguration config = new YamlConfiguration();
+    
+    try { config.load(getDataFolder().getAbsolutePath() + "/" + filename); }
+    catch (Exception e) { return null; }
+    
+    return config;
+  }
+
   /*
    * Registers events
    */
-  public void register() {
+  private void register() {
     // Variables
     PluginManager manager = Bukkit.getPluginManager();
 
@@ -102,29 +120,42 @@ public class AeonRPG extends JavaPlugin {
   }
 
   /*
-   * Saves the plugins
+   * Saves the plugin's data
    */
-  public void save() {
+  private void save() {
+  }
+
+  /**
+   * Saves a plugin file.
+   * @param config The yaml configuration we're saving.
+   * @param filename The name of the file we're saving to.
+   */
+  public void savePluginFile(YamlConfiguration config, String filename) {
+    
+    try {
+      config.save(getDataFolder().getAbsolutePath() + "/" + filename);
+    }
+    catch (Exception e) { e.printStackTrace(); }
   }
 
   /*
    * Schedules tasks to be run
    */
-  public void schedule() {
+  private void schedule() {
     new CustomPotionTick(this, typeManager.getPotionEffectManager()).schedule();
   }
-
+  
   /*
-   * Unregisters all listeners and tasks
+   * Unregisters all listeners tied to this plugin
    */
-  public void unregister() {
+  private void unregister() {
     HandlerList.unregisterAll(this);
   }
-
+  
   /*
-   * Cancels all tasks
+   * Cancels all tasks tied to this plugin.
    */
-  public void unschedule() {
+  private void unschedule() {
     Bukkit.getScheduler().cancelTasks(this);
   }
 }
