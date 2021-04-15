@@ -1,19 +1,16 @@
 package com.gmail.alexdion93.aeonrpg.managers;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.logging.Logger;
 
 import org.bukkit.NamespacedKey;
-import org.bukkit.configuration.InvalidConfigurationException;
-import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.plugin.java.JavaPlugin;
 
+import com.gmail.alexdion93.aeonrpg.AeonRPG;
 import com.gmail.alexdion93.aeonrpg.data.type.RPGDataType;
 
 /**
@@ -25,15 +22,21 @@ public class GenericRPGTypeManager<T extends RPGDataType> {
 
   private List<String> sortedKeys;
   private final HashMap<String, T> types;
+  private AeonRPG plugin;
+  /*
   private File file;
   private FileConfiguration config;
+  */
 
   /**
    * Constructor
    */
   @SuppressWarnings("serial")
-  public GenericRPGTypeManager(JavaPlugin plugin) {
+  public GenericRPGTypeManager(AeonRPG plugin) {
+    this.plugin = plugin;
     types = new HashMap<>();
+    
+    //TODO: Consider changing this, it might be inefficient
     sortedKeys = new ArrayList<String>() {
       @Override
       public boolean add(String mt) {
@@ -42,26 +45,8 @@ public class GenericRPGTypeManager<T extends RPGDataType> {
         return true;
       }
     };
-
-    // Create the config file
-    String path = "config.yml";
-    file = new File(plugin.getDataFolder(), path);
-    if (!file.exists()) {
-      file.getParentFile().mkdirs();
-      try {
-        file.createNewFile();
-      } catch (IOException e) {
-        e.printStackTrace();
-      }
-    }
-
-    config = new YamlConfiguration();
-    try {
-      config.load(file);
-    } catch (IOException | InvalidConfigurationException e) {
-      e.printStackTrace();
-    }
   }
+
 
   /**
    * Fetches an type from the map.
@@ -104,47 +89,41 @@ public class GenericRPGTypeManager<T extends RPGDataType> {
   /**
    * Adds an type to the map.
    *
-   * @param key The target key the type is stored under.
-   * @throws IllegalArgumentException If the type is already registered.
-   * @throws NullPointerException     If the type provided is null.
+   * @param type The type being added to the map
+   * @return Whether or not the addition was successful
    */
-  public void put(final T type) {
+  public boolean put(final T type) {
+    Logger log = plugin.getLogger();
+    
     // Null Check
     if (type == null) {
-      throw new NullPointerException("Null cannot be used for types");
+      log.severe("Failed to register due to type being null");
+      return false;
+    }
+    
+    //Variables
+    NamespacedKey nsk = type.getNamespacedKey();
+    String key = type.getNamespacedKey().getKey().toUpperCase();
+    
+    //Check if the type is disabled in the configuration
+    YamlConfiguration config = plugin.openPluginFile("config.yml");
+    if (config != null) {
+      if (!config.getBoolean("data." + nsk.getNamespace() + "." + key, true)) {
+        log.info("Failed to register " + key + " due to being disabled in config.yml");
+        return false;
+      }
     }
 
     // Duplicate Entry Check
-    NamespacedKey nsk = type.getNamespacedKey();
-    String key = nsk.getKey().toUpperCase();
     if (types.containsKey(key)) {
-      throw new IllegalArgumentException("Type \"" + key + "\" already registered to this map!");
+      log.warning("Failed to register " + key + " as its namespace is already in use");
+      return false;
     }
-
-    // Disabled Check
-    if (config != null) {
-      String path = nsk.getNamespace() + "." + key;
-
-      // Create Default Value
-      if (!config.contains(path)) {
-        config.set(path, true);
-        try {
-          config.save(file);
-        } catch (IOException e) {
-          e.printStackTrace();
-        }
-      }
-
-      // Ignore if disabled via config
-      if (!config.getBoolean(path, true)) {
-        return;
-      }
-    }
-
-    // Register the type
+    
+    // Add to the appropriate players
     types.put(key, type);
-
-    // Add to the sorted keys
     sortedKeys.add(key);
+    log.info("Successfully registered " + key + "");
+    return true;
   }
 }
