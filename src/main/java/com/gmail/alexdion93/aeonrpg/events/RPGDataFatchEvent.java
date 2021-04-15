@@ -6,10 +6,21 @@ import org.bukkit.persistence.PersistentDataHolder;
 
 import com.gmail.alexdion93.aeonrpg.data.type.RPGDataType;
 
+/**
+ * A custom event designed to be thrown whenever someone fetches
+ * rpg data. This allows other sources to modify the final value
+ * of the data.
+ * @author Alex Dion
+ *
+ */
 public class RPGDataFatchEvent extends Event {
 
   private static HandlerList handlers = new HandlerList();
 
+  /**
+   * Returns the handlers tied to this event
+   * @return The handlers tied to this event
+   */
   public static HandlerList getHandlerList() {
     return handlers;
   }
@@ -20,7 +31,7 @@ public class RPGDataFatchEvent extends Event {
   private int value;
 
   /**
-   *
+   * Constructor
    * @param type   The type being fetched.
    * @param holder The entity this is being fetched for
    * @param value  The initial value fetched from the type
