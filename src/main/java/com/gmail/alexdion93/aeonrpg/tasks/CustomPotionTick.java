@@ -1,9 +1,11 @@
 package com.gmail.alexdion93.aeonrpg.tasks;
 
 import java.util.UUID;
+import java.util.logging.Logger;
 
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -22,7 +24,7 @@ import com.gmail.alexdion93.aeonrpg.managers.GenericRPGTypeManager;
  */
 public class CustomPotionTick extends BukkitRunnable {
 
-  public static final long SECONDS = 1;
+  private long tickRate = -1;
 
   private GenericRPGTypeManager<RPGPotionEffectType> manager;
   private AeonRPG plugin;
@@ -30,6 +32,12 @@ public class CustomPotionTick extends BukkitRunnable {
   public CustomPotionTick(AeonRPG plugin, GenericRPGTypeManager<RPGPotionEffectType> manager) {
     this.manager = manager;
     this.plugin = plugin;
+    
+    YamlConfiguration config = plugin.openPluginFile("config.yml");
+    plugin.getLogger().info("Custom Potion Tick");
+    if (config != null) {
+      tickRate = config.getLong("settings.custom-potion-tick-rate", -1);
+    }
   }
 
   @Override
@@ -63,7 +71,18 @@ public class CustomPotionTick extends BukkitRunnable {
    * Schedules this task to run
    */
   public void schedule() {
-    runTaskTimer(plugin, SECONDS * 20L, SECONDS * 20L);
+    
+    Logger log = plugin.getLogger();
+    
+    log.info("  Scheduled: " + (tickRate >= 1));
+    
+    if (tickRate > 0) {
+      runTaskTimer(plugin, tickRate, tickRate);
+      log.info("  Rate: " + tickRate + " ticks ( " + (tickRate / 20.0) + " seconds )");
+    }
+    else {
+      log.info("  Rate: N/A");
+    }
   }
 
   /**
@@ -101,7 +120,7 @@ public class CustomPotionTick extends BukkitRunnable {
     type.onPotionTick(entity, level, duration);
 
     // Update the duration
-    duration -= SECONDS;
+    duration -= tickRate;
     if (duration <= 0) {
       type.removeFrom(entity);
     } else {
