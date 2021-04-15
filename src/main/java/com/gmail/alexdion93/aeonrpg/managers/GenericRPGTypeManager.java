@@ -23,10 +23,6 @@ public class GenericRPGTypeManager<T extends RPGDataType> {
   private List<String> sortedKeys;
   private final HashMap<String, T> types;
   private AeonRPG plugin;
-  /*
-  private File file;
-  private FileConfiguration config;
-  */
 
   /**
    * Constructor
@@ -125,5 +121,21 @@ public class GenericRPGTypeManager<T extends RPGDataType> {
     sortedKeys.add(key);
     log.info("Successfully registered " + key + "");
     return true;
+  }
+  
+  /**
+   * Saves all data to the map
+   */
+  public void save(YamlConfiguration config) {
+    for(T type :types.values()) {
+      
+      //Variables
+      NamespacedKey nsk = type.getNamespacedKey();
+      String key = type.getNamespacedKey().getKey().toUpperCase();
+      String path = "data." + nsk.getNamespace() + "." + key;
+      
+      if (config.contains(path)) { continue; }
+      config.set(path, true);
+    }
   }
 }

@@ -3,6 +3,7 @@ package com.gmail.alexdion93.aeonrpg.managers;
 import java.util.ArrayList;
 import java.util.logging.Logger;
 
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -120,5 +121,25 @@ public class RPGTypeManager implements Listener {
     log.info("  Enchantments: " + enchantments.getKeys().size());
     log.info("  Potion Effects: " + potioneffects.getKeys().size());
     log.info("  Generics: " + generic.getKeys().size());
+  }
+  
+  /**
+   * Saves the data on all rpg types
+   */
+  public void save() {
+    
+    YamlConfiguration config = plugin.openPluginFile("config.yml");
+    Logger log = plugin.getLogger();
+    
+    if (config == null) {
+      log.severe("Failed to save. Could not open config.yml");
+      return;
+    }
+    
+    for(GenericRPGTypeManager<?> manager : managers) {
+      manager.save(config);
+    }
+    
+    plugin.savePluginFile(config, "config.yml");
   }
 }
