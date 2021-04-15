@@ -16,6 +16,7 @@ import com.gmail.alexdion93.aeonrpg.data.type.RPGPotionEffectType;
 
 /**
  * A container for multiple defined rpg data types
+ * TODO: Remove init methods from places that don't need it. We can do in the constructor
  * @author Alex Dion
  *
  */
@@ -35,26 +36,28 @@ public class RPGTypeManager implements Listener {
    */
   public RPGTypeManager(final AeonRPG plugin) {
     this.plugin = plugin;
-    init();
+    
+    managers = new ArrayList<>();
+    managers.add(attributes = new GenericRPGTypeManager<>(plugin));
+    managers.add(enchantments = new GenericRPGTypeManager<>(plugin));
+    managers.add(potioneffects = new GenericRPGTypeManager<>(plugin));
+    managers.add(generic = new GenericRPGTypeManager<>(plugin));
   }
 
   /*
    * Fetches an data type if possible
    *
    * @param The key we're searching for
-   *
    * @return A data type or null
    */
   public RPGDataType get(String key) {
-    if (key == null) {
-      return null;
-    }
+    if (key == null) { return null; }
+    
     for (GenericRPGTypeManager<?> manager : managers) {
-      if (!manager.has(key)) {
-        continue;
-      }
+      if (!manager.has(key)) { continue; }
       return manager.get(key);
     }
+    
     return null;
   }
 
@@ -104,18 +107,6 @@ public class RPGTypeManager implements Listener {
   }
 
   /**
-   * Initialize Variables
-   */
-  public void init() {
-    managers = new ArrayList<>();
-    // The order these are added in is the order they are displayed in.
-    managers.add(attributes = new GenericRPGTypeManager<>(plugin));
-    managers.add(enchantments = new GenericRPGTypeManager<>(plugin));
-    managers.add(potioneffects = new GenericRPGTypeManager<>(plugin));
-    managers.add(generic = new GenericRPGTypeManager<>(plugin));
-  }
-
-  /**
    * Triggers when the server startup or reload has completed
    *
    * @param event The event being fired
@@ -124,9 +115,10 @@ public class RPGTypeManager implements Listener {
   public void onServerLoad(ServerLoadEvent event) {
     Logger log = plugin.getLogger();
 
-    log.info("Loaded " + attributes.getKeys().size() + " attributes.");
-    log.info("Loaded " + enchantments.getKeys().size() + " enchantments.");
-    log.info("Loaded " + generic.getKeys().size() + " generic data types");
-    log.info("Loaded " + potioneffects.getKeys().size() + " potion effects.");
+    log.info("Type Manager");
+    log.info("  Attributes: " + attributes.getKeys().size());
+    log.info("  Enchantments: " + enchantments.getKeys().size());
+    log.info("  Potion Effects: " + potioneffects.getKeys().size());
+    log.info("  Generics: " + generic.getKeys().size());
   }
 }
