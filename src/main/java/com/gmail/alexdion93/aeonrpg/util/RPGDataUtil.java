@@ -50,7 +50,8 @@ import com.gmail.alexdion93.inventoryequipevent.events.UpdateCause;
 public class RPGDataUtil {
 
   private static AeonRPG plugin;
-
+  private RPGDataUtil() {}
+  
   /**
    * Edits data derived from RPGDataValued on an entity
    *
@@ -912,4 +913,62 @@ public class RPGDataUtil {
 
   }
 
+  /**
+   * Copies persistent data between two containers
+   * @param source The source of the data
+   * @param target The destination of the data
+   */
+  public static void copyData(PersistentDataContainer source, PersistentDataContainer target) {
+    
+    for(NamespacedKey key : source.getKeys()) {
+      
+      if (source.has(key, PersistentDataType.BYTE)) {
+        target.set(key, PersistentDataType.BYTE, source.get(key, PersistentDataType.BYTE));
+      }
+      
+      else if (source.has(key, PersistentDataType.BYTE_ARRAY)) {
+        target.set(key, PersistentDataType.BYTE_ARRAY, source.get(key, PersistentDataType.BYTE_ARRAY));
+      }
+      
+      else if (source.has(key, PersistentDataType.DOUBLE)) {
+        target.set(key, PersistentDataType.DOUBLE, source.get(key, PersistentDataType.DOUBLE));
+      }
+      
+      else if (source.has(key, PersistentDataType.FLOAT)) {
+        target.set(key, PersistentDataType.FLOAT, source.get(key, PersistentDataType.FLOAT));
+      }
+      
+      else if (source.has(key, PersistentDataType.INTEGER)) {
+        target.set(key, PersistentDataType.INTEGER, source.get(key, PersistentDataType.INTEGER));
+      }
+      
+      else if (source.has(key, PersistentDataType.INTEGER_ARRAY)) {
+        target.set(key, PersistentDataType.INTEGER_ARRAY, source.get(key, PersistentDataType.INTEGER_ARRAY));
+      }
+      
+      else if (source.has(key, PersistentDataType.LONG)) {
+        target.set(key, PersistentDataType.LONG, source.get(key, PersistentDataType.LONG));
+      }
+      
+      else if (source.has(key, PersistentDataType.LONG_ARRAY)) {
+        target.set(key, PersistentDataType.LONG_ARRAY, source.get(key, PersistentDataType.LONG_ARRAY));
+      }
+      
+      else if (source.has(key, PersistentDataType.SHORT)) {
+        target.set(key, PersistentDataType.SHORT, source.get(key, PersistentDataType.SHORT));
+      }
+      
+      else if (source.has(key, PersistentDataType.STRING)) {
+        target.set(key, PersistentDataType.STRING, source.get(key, PersistentDataType.STRING));
+      }
+      
+      else if (source.has(key, PersistentDataType.TAG_CONTAINER)) {
+        target.set(key, PersistentDataType.TAG_CONTAINER, source.get(key, PersistentDataType.TAG_CONTAINER));
+      }
+      
+      else if (source.has(key, PersistentDataType.TAG_CONTAINER_ARRAY)) {
+        target.set(key, PersistentDataType.TAG_CONTAINER_ARRAY, source.get(key, PersistentDataType.TAG_CONTAINER_ARRAY));
+      }
+    }
+  }
 }
