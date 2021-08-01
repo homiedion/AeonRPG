@@ -20,9 +20,10 @@ public abstract class RPGAttributeType extends RPGDataType implements RPGDataVal
   /**
    * Constructor
    *
-   * @param plugin      The targe tplugin.
+   * @param plugin      The target plugin.
    * @param key         The key of this type.
    * @param displayName The display name of this type.
+   * @param description The type's description
    */
   public RPGAttributeType(final JavaPlugin plugin, final String key, final String displayName,
       final String description) {

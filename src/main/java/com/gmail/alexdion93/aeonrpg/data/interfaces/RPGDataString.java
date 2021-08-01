@@ -15,6 +15,7 @@ public interface RPGDataString {
    * Triggers when the item is modifed
    *
    * @param meta  The meta being modified
+   * @param material The material we're modifying
    * @param value The value of this one.
    */
   public abstract void modifyItem(ItemMeta meta, Material material, String value);

@@ -462,7 +462,7 @@ public class CMD_AeonRPG implements CommandExecutor, TabCompleter {
   }
 
   /**
-   * The command "aeonrpg load <filename>"
+   * The command "aeonrpg load [filename]"
    *
    * @param sender  the command sender
    * @param command the command being sent
@@ -560,7 +560,6 @@ public class CMD_AeonRPG implements CommandExecutor, TabCompleter {
    * Returns if the argument array has an argument at the position
    *
    * @param args  The array of arguments
-   * @param arg   The argument we're looking for
    * @param index The index we're targetting
    * @return True if present
    */

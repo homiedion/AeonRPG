@@ -29,6 +29,7 @@ public abstract class RPGPotionEffectType extends RPGDataType implements RPGData
    * @param plugin      The targe tplugin.
    * @param key         The key of this type.
    * @param displayName The display name of this type.
+   * @param description This type's description
    */
   public RPGPotionEffectType(final JavaPlugin plugin, final String key, final String displayName,
       final String description) {

@@ -55,7 +55,7 @@ public class ArrowFireListener implements Listener {
   /**
    * Constructor
    *
-   * @param manager The potion effect manager
+   * @param plugin The source plugin
    */
   public ArrowFireListener(AeonRPG plugin) {
     this.plugin = plugin;

@@ -1,1 +1,1 @@
-typeSearchIndex = [{"l":"All Classes","url":"allclasses-index.html"},{"p":"com.gmail.alexdion93.aeonrpg.data.type","l":"RPGDataType"}]
+typeSearchIndex = [{"l":"All Classes","url":"allclasses-index.html"},{"p":"com.gmail.alexdion93.aeonrpg.listeners","l":"ArrowFireListener"}]

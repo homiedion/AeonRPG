@@ -19,6 +19,7 @@ public abstract class RPGEnchantmentType extends RPGDataType implements RPGDataL
    * @param plugin      The targe tplugin.
    * @param key         The key of this type.
    * @param displayName The display name of this type.
+   * @param description This type's description
    */
   public RPGEnchantmentType(final JavaPlugin plugin, final String key, final String displayName,
       final String description) {
