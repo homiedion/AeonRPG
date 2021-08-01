@@ -124,14 +124,16 @@ public class GenericRPGTypeManager<T extends RPGDataType> {
   }
   
   /**
-   * Saves all data to the map
+   * Saves all data to the config file
+   * @param config The configuration file
    */
   public void save(YamlConfiguration config) {
-    for(T type :types.values()) {
+    for(String key : sortedKeys) {
       
       //Variables
+      T type = types.get(key);
       NamespacedKey nsk = type.getNamespacedKey();
-      String key = type.getNamespacedKey().getKey().toUpperCase();
+      //String key = type.getNamespacedKey().getKey().toUpperCase();
       String path = "data." + nsk.getNamespace() + "." + key;
       
       if (config.contains(path)) { continue; }
