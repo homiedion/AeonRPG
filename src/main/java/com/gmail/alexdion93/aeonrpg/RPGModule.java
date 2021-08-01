@@ -25,6 +25,9 @@ import com.gmail.alexdion93.aeonrpg.managers.GenericRPGTypeManager;
  */
 public abstract class RPGModule extends JavaPlugin {
 
+  /**
+   * Class Variables
+   */
   protected AeonRPG aeonrpg;
   
   /*
