@@ -422,7 +422,6 @@ public class RPGDataUtil {
    * their lore added to them.
    *
    * @param data   The data we're turning into lore
-   * @param plugin the plugin we're drawing from
    * @return an array list of lore or null if its empty
    * @throws IllegalArgumentException if the plugin is null
    * @throws IllegalArgumentException if the data is null
@@ -573,10 +572,9 @@ public class RPGDataUtil {
   /**
    * Attempts to save an item to the provided path
    *
-   * @param plugin The plugin whose folder we'll be using
    * @param path   The path we'll be saving to
-   * @return An itemstack with the values loaded
    * @throws NullPointerException if the path is null
+   * @return An item stack
    */
   public static ItemStack loadItem(String path) {
 
@@ -779,12 +777,10 @@ public class RPGDataUtil {
   /**
    * Attempts to save an item to the provided path
    *
-   * @param plugin The plugin whose folder we'll be using
    * @param path   The path we'll be saving to
    * @param item   The itemstack we'll be saving
    * @throws NullPointerException if the file path is null
    * @throws NullPointerException if the itemstack is null
-   * @throws IOException          if the file isn't saved properly
    */
   public static void saveItem(String path, ItemStack item) {
 
