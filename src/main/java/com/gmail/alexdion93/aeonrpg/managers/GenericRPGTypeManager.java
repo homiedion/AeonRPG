@@ -26,6 +26,7 @@ public class GenericRPGTypeManager<T extends RPGDataType> {
 
   /**
    * Constructor
+   * @param plugin The AeonRPG plugin
    */
   @SuppressWarnings("serial")
   public GenericRPGTypeManager(AeonRPG plugin) {
