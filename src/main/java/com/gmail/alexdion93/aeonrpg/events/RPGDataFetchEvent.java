@@ -13,7 +13,7 @@ import com.gmail.alexdion93.aeonrpg.data.type.RPGDataType;
  * @author Alex Dion
  *
  */
-public class RPGDataFatchEvent extends Event {
+public class RPGDataFetchEvent extends Event {
 
   private static HandlerList handlers = new HandlerList();
 
@@ -27,7 +27,6 @@ public class RPGDataFatchEvent extends Event {
 
   private PersistentDataHolder holder;
   private RPGDataType type;
-
   private int value;
 
   /**
@@ -39,13 +38,10 @@ public class RPGDataFatchEvent extends Event {
    * @throws NullPointerException if the type is null
    * @throws NullPointerException if the entity is null
    */
-  public RPGDataFatchEvent(PersistentDataHolder holder, RPGDataType type, int value) {
-    if (holder == null) {
-      throw new NullPointerException("Provided entity cannot be null");
-    }
-    if (type == null) {
-      throw new NullPointerException("Provided type cannot be null");
-    }
+  public RPGDataFetchEvent(PersistentDataHolder holder, RPGDataType type, int value) {
+    if (holder == null) { throw new NullPointerException("Provided entity cannot be null"); }
+    if (type == null) { throw new NullPointerException("Provided type cannot be null"); }
+    
     this.type = type;
     this.value = value;
     this.holder = holder;

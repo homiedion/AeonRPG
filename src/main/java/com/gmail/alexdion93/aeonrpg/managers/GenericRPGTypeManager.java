@@ -7,9 +7,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Logger;
 
-import org.bukkit.NamespacedKey;
-import org.bukkit.configuration.file.YamlConfiguration;
-
 import com.gmail.alexdion93.aeonrpg.AeonRPG;
 import com.gmail.alexdion93.aeonrpg.data.type.RPGDataType;
 
@@ -33,7 +30,6 @@ public class GenericRPGTypeManager<T extends RPGDataType> {
     this.plugin = plugin;
     types = new HashMap<>();
     
-    //TODO: Consider changing this, it might be inefficient
     sortedKeys = new ArrayList<String>() {
       @Override
       public boolean add(String mt) {
@@ -52,7 +48,7 @@ public class GenericRPGTypeManager<T extends RPGDataType> {
    * @return A registered type or null.
    */
   public T get(final String key) {
-    return types.get(key.toUpperCase());
+    return types.get(key.toLowerCase());
   }
 
   /**
@@ -80,7 +76,7 @@ public class GenericRPGTypeManager<T extends RPGDataType> {
    * @return True if the key is present
    */
   public boolean has(final String key) {
-    return types.containsKey(key.toUpperCase());
+    return types.containsKey(key.toLowerCase());
   }
 
   /**
@@ -89,7 +85,7 @@ public class GenericRPGTypeManager<T extends RPGDataType> {
    * @param type The type being added to the map
    * @return Whether or not the addition was successful
    */
-  public boolean put(final T type) {
+  public boolean register(final T type) {
     Logger log = plugin.getLogger();
     
     // Null Check
@@ -99,46 +95,19 @@ public class GenericRPGTypeManager<T extends RPGDataType> {
     }
     
     //Variables
-    NamespacedKey nsk = type.getNamespacedKey();
-    String key = type.getNamespacedKey().getKey().toUpperCase();
     
-    //Check if the type is disabled in the configuration
-    YamlConfiguration config = plugin.openPluginFile("config.yml");
-    if (config != null) {
-      if (!config.getBoolean("data." + nsk.getNamespace() + "." + key, true)) {
-        log.info("Failed to register " + key + " due to being disabled in config.yml");
-        return false;
-      }
+    
+    // Success
+    String key = type.getDataKey().toLowerCase();
+    if (!has(key)) {
+      types.put(key, type);
+      sortedKeys.add(key);
+      log.info("Registered " + key + " from " + type.getDisplayName() + ".");
     }
-
-    // Duplicate Entry Check
-    if (types.containsKey(key)) {
-      log.warning("Failed to register " + key + " as its namespace is already in use");
-      return false;
+    else {
+      log.warning("Key " + type.getDataKey() + " is already registered.");
     }
     
-    // Add to the appropriate players
-    types.put(key, type);
-    sortedKeys.add(key);
-    log.info("Successfully registered " + key + "");
     return true;
-  }
-  
-  /**
-   * Saves all data to the config file
-   * @param config The configuration file
-   */
-  public void save(YamlConfiguration config) {
-    for(String key : sortedKeys) {
-      
-      //Variables
-      T type = types.get(key);
-      NamespacedKey nsk = type.getNamespacedKey();
-      //String key = type.getNamespacedKey().getKey().toUpperCase();
-      String path = "data." + nsk.getNamespace() + "." + key;
-      
-      if (config.contains(path)) { continue; }
-      config.set(path, true);
-    }
   }
 }

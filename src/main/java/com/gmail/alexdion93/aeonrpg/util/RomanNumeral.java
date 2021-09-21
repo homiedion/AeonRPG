@@ -16,19 +16,13 @@ public class RomanNumeral {
    *
    * @param number The integer we're trying to parse.
    * @return a roman numeral
-   * @throws IllegalArgumentException if number is greater than 5000
-   * @throws IllegalArgumentException if number is zero or negative
    */
   public static String parse(int number) {
 
-    if (number > 5000) {
-      throw new IllegalArgumentException("Number cannot be greater than 5000");
-    }
+    if (number > 5000) { return "???"; }
 
     // Ignore negatives and zero
-    if (number <= 0) {
-      throw new IllegalArgumentException("Number cannot be zero or lower");
-    }
+    if (number <= 0) { return ""; }
 
     // Variables
     String value = "";

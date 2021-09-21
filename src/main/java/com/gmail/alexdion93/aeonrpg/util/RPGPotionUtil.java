@@ -84,8 +84,8 @@ public class RPGPotionUtil {
 
       // Fetch Data and Keys
       PersistentDataContainer data = target.getPersistentDataContainer();
-      NamespacedKey key = type.getNamespacedKey();
-      NamespacedKey alt = type.getAltNamespacedKey();
+      NamespacedKey key = type.getPrimaryKey();
+      NamespacedKey alt = type.getSecondaryKey();
 
       // Fetch the old potion effect
       int oldLevel = data.getOrDefault(key, PersistentDataType.INTEGER, 0);
@@ -104,7 +104,7 @@ public class RPGPotionUtil {
 
       // Add affected mobs to the map
       if (target.getType() != EntityType.PLAYER) {
-        type.getAffectedMobs().add(target.getUniqueId());
+        type.getAffectedEntities().add(target.getUniqueId());
       }
     }
 

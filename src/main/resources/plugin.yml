@@ -1,6 +1,6 @@
 name: AeonRPG
 main: com.gmail.alexdion93.aeonrpg.AeonRPG
-version: 0.7.0
+version: 0.8.0
 description: Adds a framework for RPG elements into Minecraft.
 api-version: 1.15
 load: POSTWORLD
@@ -10,13 +10,54 @@ depend: [InventoryEquipEventPlugin]
 prefix: AeonRPG
 softdepend: []
 loadbefore: []
-commands: 
-  aeonrpg:
-    description: Administrative controls over the plugin.
-    usage: /aeonrpg
-    permission: aeonrpg.admin
-    aliases: [aeon, rpg]
-permissions: 
+
+########################################
+# COMMANDS                             #
+########################################
+commands:
+  rpgentity:
+    description: Modifies the rpg data on stored entity.
+    usage: "/<command> <operation> [key] [value]"
+    permission: aeonrpg.command.rpgentity
+  rpgitem:
+    description: Modifies the rpg data on the held item.
+    usage: "/<command> <operation> [key] [value]"
+    permission: aeonrpg.command.rpgitem
+  rpgplayer:
+    description: Modifies the rpg data on a player.
+    usage: "/<command> <operation> [key] [value]"
+    permission: aeonrpg.command.rpgplayer
+
+########################################
+# PERMISSIONS                          #
+########################################
+permissions:
+
+  ########################################
+  # ADMIN PERMISSIONS                    #
+  ########################################
   aeonrpg.admin:
-    description: Grants administrative controls to the user.
+    description: Grants full access to all commands
+    default: op
+    children:
+      aeonrpg.command: true
+  
+  ########################################
+  # COMMAND PERMISSIONS                  #
+  ########################################
+  aeonrpg.command:
+    description: Grants full access to all commands
+    default: op
+    children:
+      aeonrpg.command.rpgentity: true
+      aeonrpg.command.rpgitem: true
+      aeonrpg.command.rpgplayer: true
+  aeonrpg.command.rpgentity:
+    description: Allows for the modification of rpg data on a stored entity.
+    default: op
+  aeonrpg.command.rpgitem:
+    description: Allows for the modification of rpg data on an item.
+    default: op
+  aeonrpg.command.rpgplayer:
+    description: Allows for the modification of rpg data on a player.
     default: op

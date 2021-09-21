@@ -3,7 +3,6 @@ package com.gmail.alexdion93.aeonrpg.managers;
 import java.util.ArrayList;
 import java.util.logging.Logger;
 
-import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -14,10 +13,10 @@ import com.gmail.alexdion93.aeonrpg.data.type.RPGAttributeType;
 import com.gmail.alexdion93.aeonrpg.data.type.RPGDataType;
 import com.gmail.alexdion93.aeonrpg.data.type.RPGEnchantmentType;
 import com.gmail.alexdion93.aeonrpg.data.type.RPGPotionEffectType;
+import com.gmail.alexdion93.aeonrpg.data.type.RPGSkillType;
 
 /**
  * A container for multiple defined rpg data types
- * TODO: Remove init methods from places that don't need it. We can do in the constructor
  * @author Alex Dion
  *
  */
@@ -28,7 +27,8 @@ public class RPGTypeManager implements Listener {
   private ArrayList<GenericRPGTypeManager<?>> managers;
   private final AeonRPG plugin;
   private GenericRPGTypeManager<RPGPotionEffectType> potioneffects;
-  private GenericRPGTypeManager<RPGDataType> generic;
+  private GenericRPGTypeManager<RPGSkillType> skills;
+  private GenericRPGTypeManager<RPGDataType> generics;
 
   /**
    * Constructor
@@ -42,7 +42,8 @@ public class RPGTypeManager implements Listener {
     managers.add(attributes = new GenericRPGTypeManager<>(plugin));
     managers.add(enchantments = new GenericRPGTypeManager<>(plugin));
     managers.add(potioneffects = new GenericRPGTypeManager<>(plugin));
-    managers.add(generic = new GenericRPGTypeManager<>(plugin));
+    managers.add(skills = new GenericRPGTypeManager<>(plugin));
+    managers.add(generics = new GenericRPGTypeManager<>(plugin));
   }
 
   /*
@@ -86,7 +87,7 @@ public class RPGTypeManager implements Listener {
    * @return The generic manager of the plugin.
    */
   public GenericRPGTypeManager<RPGDataType> getGenericManager() {
-    return generic;
+    return generics;
   }
 
   /**
@@ -106,6 +107,15 @@ public class RPGTypeManager implements Listener {
   public GenericRPGTypeManager<RPGPotionEffectType> getPotionEffectManager() {
     return potioneffects;
   }
+  
+  /**
+   * Returns the skill manager of the plugin.
+   *
+   * @return The skill manager of the plugin.
+   */
+  public GenericRPGTypeManager<RPGSkillType> getSkillManager() {
+    return skills;
+  }
 
   /**
    * Triggers when the server startup or reload has completed
@@ -115,31 +125,10 @@ public class RPGTypeManager implements Listener {
   @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
   public void onServerLoad(ServerLoadEvent event) {
     Logger log = plugin.getLogger();
-
-    log.info("Type Manager");
-    log.info("  Attributes: " + attributes.getKeys().size());
-    log.info("  Enchantments: " + enchantments.getKeys().size());
-    log.info("  Potion Effects: " + potioneffects.getKeys().size());
-    log.info("  Generics: " + generic.getKeys().size());
-  }
-  
-  /**
-   * Saves the data on all rpg types
-   */
-  public void save() {
-    
-    YamlConfiguration config = plugin.openPluginFile("config.yml");
-    Logger log = plugin.getLogger();
-    
-    if (config == null) {
-      log.severe("Failed to save. Could not open config.yml");
-      return;
-    }
-    
-    for(GenericRPGTypeManager<?> manager : managers) {
-      manager.save(config);
-    }
-    
-    plugin.savePluginFile(config, "config.yml");
+    log.info("Loaded " + attributes.getKeys().size() + " rpg attributes.");
+    log.info("Loaded " + enchantments.getKeys().size() + " rpg enchantments.");
+    log.info("Loaded " + potioneffects.getKeys().size() + " rpg potion effects.");
+    log.info("Loaded " + skills.getKeys().size() + " rpg skills.");
+    log.info("Loaded " + generics.getKeys().size() + " rpg generics.");
   }
 }

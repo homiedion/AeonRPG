@@ -9,11 +9,11 @@ import org.bukkit.event.Listener;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import com.gmail.alexdion93.aeonrpg.data.interfaces.RPGRecipeModifier;
 import com.gmail.alexdion93.aeonrpg.data.type.RPGAttributeType;
 import com.gmail.alexdion93.aeonrpg.data.type.RPGDataType;
 import com.gmail.alexdion93.aeonrpg.data.type.RPGEnchantmentType;
 import com.gmail.alexdion93.aeonrpg.data.type.RPGPotionEffectType;
+import com.gmail.alexdion93.aeonrpg.data.type.RPGSkillType;
 import com.gmail.alexdion93.aeonrpg.managers.GenericRPGTypeManager;
 
 /**
@@ -117,9 +117,8 @@ public abstract class RPGModule extends JavaPlugin {
    */
   private <T extends RPGDataType> void registerData(GenericRPGTypeManager<T> manager, T type) {
     try {
-      manager.put(type);
+      manager.register(type);
       if (type instanceof Listener) { Bukkit.getPluginManager().registerEvents((Listener) type, this); }
-      if (type instanceof RPGRecipeModifier) { ((RPGRecipeModifier) type).modifyRecipes(); }
     }
     catch (Exception e) {
       getLogger().warning(String.format("Failed to register %s. %s", type.getDisplayName(), e.toString()));
@@ -199,6 +198,30 @@ public abstract class RPGModule extends JavaPlugin {
     for(RPGPotionEffectType type : types) {registerData(manager, type);}
   }
   
+  /**
+   * Attempts to register one or more RPGSkillType to the appropriate manager
+   * and performs certain operations based on the interfaces included:
+   * • If the type is a listener it will automatically register it to this module
+   * • If the type modifies a vanilla recipe it will be applied to them
+   * @param types A collection of skills
+   */
+  protected void registerSkills(List<RPGSkillType> types) {
+    GenericRPGTypeManager<RPGSkillType> manager = aeonrpg.getRPGDataTypeManager().getSkillManager();
+    for(RPGSkillType type : types) { registerData(manager, type); }
+  }
+  
+  /**
+   * Attempts to register one or more RPGSkillType to the appropriate manager
+   * and performs certain operations based on the interfaces included:
+   * • If the type is a listener it will automatically register it to this module
+   * • If the type modifies a vanilla recipe it will be applied to them
+   * @param types One or more rpg data types
+   */
+  protected void registerSkills(RPGSkillType... types) {
+    GenericRPGTypeManager<RPGSkillType> manager = aeonrpg.getRPGDataTypeManager().getSkillManager();
+    for(RPGSkillType type : types) {registerData(manager, type);}
+  }
+
   /**
    * Schedules tasks related to this module.
    */

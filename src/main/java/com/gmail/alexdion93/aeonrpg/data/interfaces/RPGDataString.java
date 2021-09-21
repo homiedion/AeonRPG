@@ -1,30 +1,22 @@
 package com.gmail.alexdion93.aeonrpg.data.interfaces;
 
-import org.bukkit.Material;
-import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.NamespacedKey;
 
+/**
+ * Denotes the implementing object as having a single string value.
+ * @author Alex Dion
+ */
 public interface RPGDataString {
-  /**
-   * Returns the default value of this type.
-   *
-   * @return The default value of this type.
-   */
-  public String getDefaultValue();
 
   /**
-   * Triggers when the item is modifed
-   *
-   * @param meta  The meta being modified
-   * @param material The material we're modifying
-   * @param value The value of this one.
+   * Returns the namespaced key tied to the string value.
+   * @return the namespaced key tied to the string value.
    */
-  public abstract void modifyItem(ItemMeta meta, Material material, String value);
-
+  public NamespacedKey getStringKey();
+  
   /**
-   * Displays the string used as item lore.
-   *
-   * @param value The primary value tied to the lore string.
-   * @return A formatted string.
+   * Returns the default value for the string data value.
+   * @return the default value for the string data value.
    */
-  public String toLoreString(String value);
+  public String getStringDefaultValue();
 }

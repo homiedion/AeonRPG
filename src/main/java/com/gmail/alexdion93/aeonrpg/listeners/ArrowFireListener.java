@@ -1,7 +1,6 @@
 package com.gmail.alexdion93.aeonrpg.listeners;
 
 import org.bukkit.Location;
-import org.bukkit.NamespacedKey;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.Dispenser;
@@ -22,20 +21,10 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataContainer;
-import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.projectiles.ProjectileSource;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import com.gmail.alexdion93.aeonrpg.AeonRPG;
-import com.gmail.alexdion93.aeonrpg.data.interfaces.RPGDataString;
-import com.gmail.alexdion93.aeonrpg.data.interfaces.RPGDataTwoValued;
-import com.gmail.alexdion93.aeonrpg.data.interfaces.RPGDataValued;
-import com.gmail.alexdion93.aeonrpg.data.type.RPGAttributeType;
-import com.gmail.alexdion93.aeonrpg.data.type.RPGDataType;
-import com.gmail.alexdion93.aeonrpg.data.type.RPGEnchantmentType;
-import com.gmail.alexdion93.aeonrpg.data.type.RPGPotionEffectType;
-import com.gmail.alexdion93.aeonrpg.managers.GenericRPGTypeManager;
-import com.gmail.alexdion93.aeonrpg.managers.RPGTypeManager;
 import com.gmail.alexdion93.aeonrpg.util.RPGDataUtil;
 import com.gmail.alexdion93.inventoryequipevent.util.ItemUtil;
 
@@ -45,11 +34,6 @@ import com.gmail.alexdion93.inventoryequipevent.util.ItemUtil;
  * @author Alex Dion
  */
 public class ArrowFireListener implements Listener {
-
-  private GenericRPGTypeManager<RPGAttributeType> am;
-  private GenericRPGTypeManager<RPGEnchantmentType> em;
-  private GenericRPGTypeManager<RPGDataType> gm;
-  private GenericRPGTypeManager<RPGPotionEffectType> pm;
   private AeonRPG plugin;
   
   /**
@@ -59,17 +43,10 @@ public class ArrowFireListener implements Listener {
    */
   public ArrowFireListener(AeonRPG plugin) {
     this.plugin = plugin;
-    
-    RPGTypeManager manager = plugin.getRPGDataTypeManager();
-    am = manager.getAttributeManager();
-    em = manager.getEnchantmentManager();
-    gm = manager.getGenericManager();
-    pm = manager.getPotionEffectManager();
   }
 
   /**
    * Triggers when an arrow is picked up
-   *
    * @param event The event being triggered
    */
   @SuppressWarnings("deprecation")
@@ -86,79 +63,10 @@ public class ArrowFireListener implements Listener {
     // Copy the data over to the new item.
     PersistentDataContainer source = event.getArrow().getPersistentDataContainer();
     PersistentDataContainer target = meta.getPersistentDataContainer();
-
-    // Copy Attributes
-    for (RPGAttributeType t : am.getTypes()) {
-      PersistentDataType<Integer, Integer> type = PersistentDataType.INTEGER;
-      NamespacedKey key = t.getNamespacedKey();
-
-      if (source.has(key, type)) {
-        target.set(key, type, source.get(key, type));
-        t.modifyItem(meta, item.getType(), source.get(key, type));
-      }
-    }
-
-    // Copy Enchantments
-    for (RPGEnchantmentType t : em.getTypes()) {
-      PersistentDataType<Integer, Integer> type = PersistentDataType.INTEGER;
-      NamespacedKey key = t.getNamespacedKey();
-
-      if (source.has(key, type)) {
-        target.set(key, type, source.get(key, type));
-        t.modifyItem(meta, item.getType(), source.get(key, type));
-      }
-    }
-
-    // Copy Generics
-    for (RPGDataType t : gm.getTypes()) {
-
-      NamespacedKey key = t.getNamespacedKey();
-
-      if (t instanceof RPGDataTwoValued) {
-        PersistentDataType<Integer, Integer> type = PersistentDataType.INTEGER;
-        NamespacedKey alt = ((RPGDataTwoValued) t).getAltNamespacedKey();
-
-        if (source.has(key, type) || source.has(alt, type)) {
-          int val = source.getOrDefault(key, type, 0);
-          int oth = source.getOrDefault(alt, type, 0);
-          target.set(key, type, val);
-          target.set(alt, type, oth);
-          ((RPGDataTwoValued) t).modifyItem(meta, item.getType(), val, oth);
-        }
-      } else if (t instanceof RPGDataValued) {
-        PersistentDataType<Integer, Integer> type = PersistentDataType.INTEGER;
-        if (source.has(key, type)) {
-          int val = source.getOrDefault(key, type, 0);
-          target.set(key, type, val);
-          ((RPGDataValued) t).modifyItem(meta, item.getType(), val);
-        }
-      } else if (t instanceof RPGDataString) {
-        PersistentDataType<String, String> type = PersistentDataType.STRING;
-        if (source.has(key, type)) {
-          String val = source.getOrDefault(key, type, null);
-          target.set(key, type, val);
-          ((RPGDataString) t).modifyItem(meta, item.getType(), val);
-        }
-      }
-    }
-
-    // Copy Potion Effects
-    for (RPGPotionEffectType t : pm.getTypes()) {
-      PersistentDataType<Integer, Integer> type = PersistentDataType.INTEGER;
-      NamespacedKey key = t.getNamespacedKey();
-      NamespacedKey alt = t.getAltNamespacedKey();
-
-      if (source.has(key, type) || source.has(alt, type)) {
-        int val = source.getOrDefault(key, type, 0);
-        int oth = source.getOrDefault(alt, type, 0);
-        target.set(key, type, val);
-        target.set(alt, type, oth);
-        t.modifyItem(meta, item.getType(), val, oth);
-      }
-    }
-
+    RPGDataUtil.copyData(source, target);
+    
     // Generate the lore
-    meta.setLore(RPGDataUtil.generateLore(source));
+    meta.setLore(RPGDataUtil.generateLore(target));
 
     // Update the item's meta
     item.setItemMeta(meta);
