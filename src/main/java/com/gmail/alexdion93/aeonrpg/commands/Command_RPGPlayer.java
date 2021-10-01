@@ -2,11 +2,11 @@ package com.gmail.alexdion93.aeonrpg.commands;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
-import org.bukkit.NamespacedKey;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -250,7 +250,7 @@ public class Command_RPGPlayer implements CommandExecutor, TabCompleter {
     }
     
     //No further arguments
-    return new ArrayList<String>();
+    return new ArrayList<>();
   }
   
     /**
@@ -471,164 +471,102 @@ public class Command_RPGPlayer implements CommandExecutor, TabCompleter {
     PersistentDataContainer data = player.getPersistentDataContainer();
     Integer primary = null;
     Integer secondary = null;
-    String str = null;
+    String string = null;
+    int index = 3;
     
-    // <command> set <key> <value>
-    if (type instanceof RPGDataTwoValued) {
+    // One Valued Types
+    if (type instanceof RPGDataOneValued) {
       
-      RPGDataTwoValued alt = (RPGDataTwoValued) type;
-      
-      //Fetch the primary value
-      if (args.length == 3) {
-        sender.sendMessage(
-          ChatColor.RED + "Error!" + ChatColor.GRAY + " Incomplete Command",
+      // Check if we have too few values
+      if (args.length == index) {
+        sender.sendMessage(ChatColor.RED + "Error!" + ChatColor.GRAY + " Incomplete Command",
           ChatColor.GRAY + "Please provide a valid " + ChatColor.YELLOW + "primary" + ChatColor.GRAY + " value.",
           ChatColor.GRAY + "You may use the " + ChatColor.YELLOW + "~" + ChatColor.GRAY + " to prevent changes."
           );
         return;
       }
       
-      if (args[3] == "~") { primary = data.getOrDefault(alt.getPrimaryKey(), PersistentDataType.INTEGER, 0); }
+      //Fetch the alternate class
+      RPGDataOneValued alt = ((RPGDataOneValued) type);
+      
+      // Parse the value from the index
+      if (args[index] == "~") { primary = (data == null ? 0 : type.get(data, alt.getPrimaryKey(), PersistentDataType.INTEGER, 0)); }
       else {
-         try { primary = Integer.parseInt(args[3]); }
+         try { primary = Integer.parseInt(args[index]); }
          catch(NumberFormatException e) {
            sender.sendMessage(
              ChatColor.RED + "Error!" + ChatColor.GRAY + " Parsing Error",
              ChatColor.GRAY + "Failed to parse integer for " + ChatColor.YELLOW + "primary" + ChatColor.GRAY + " value."
              );
            return;
-         }
+        }
       }
       
-      //Fetch the secondary value
-      if (args.length == 4) {
-        sender.sendMessage(
-          ChatColor.RED + "Error!" + ChatColor.GRAY + " Incomplete Command",
+      //Set the value
+      type.set(data, alt.getPrimaryKey(), PersistentDataType.INTEGER, primary);
+      
+      //Increment the index for the next argument
+      index++;
+    }
+    
+    // Two Valued Types
+    if (type instanceof RPGDataTwoValued) {
+      
+      // Check if we have too few values
+      if (args.length == index) {
+        sender.sendMessage(ChatColor.RED + "Error!" + ChatColor.GRAY + " Incomplete Command",
           ChatColor.GRAY + "Please provide a valid " + ChatColor.YELLOW + "secondary" + ChatColor.GRAY + " value.",
           ChatColor.GRAY + "You may use the " + ChatColor.YELLOW + "~" + ChatColor.GRAY + " to prevent changes."
           );
         return;
       }
       
-      if (args[4] == "~") { secondary = data.getOrDefault(alt.getSecondaryKey(), PersistentDataType.INTEGER, 0); }
+      //Fetch the alternate class
+      RPGDataTwoValued alt = ((RPGDataTwoValued) type);
+      
+      // Parse the value from the index
+      if (args[index] == "~") { secondary = (data == null ? 0 : type.get(data, alt.getSecondaryKey(), PersistentDataType.INTEGER, 0)); }
       else {
-         try { secondary = Integer.parseInt(args[4]); }
+         try { secondary = Integer.parseInt(args[index]); }
          catch(NumberFormatException e) {
            sender.sendMessage(
              ChatColor.RED + "Error!" + ChatColor.GRAY + " Parsing Error",
              ChatColor.GRAY + "Failed to parse integer for " + ChatColor.YELLOW + "secondary" + ChatColor.GRAY + " value."
              );
            return;
-         }
-      }
-      
-      // If this is also a RPGDataString
-      if (type instanceof RPGDataString) {
-        RPGDataString strType = (RPGDataString) type;
-        NamespacedKey strKey = strType.getStringKey();
-        int start = 5;
-        
-        //Fetch the string value
-        if (args.length == start) {
-          sender.sendMessage(
-            ChatColor.RED + "Error!" + ChatColor.GRAY + " Incomplete Command",
-            ChatColor.GRAY + "Please provide a valid " + ChatColor.YELLOW + "string" + ChatColor.GRAY + " value.",
-            ChatColor.GRAY + "You may use the " + ChatColor.YELLOW + "~" + ChatColor.GRAY + " to prevent changes."
-            );
-          return;
         }
-        
-        if (args[start] == "~") { str = data.getOrDefault(strKey, PersistentDataType.STRING, null); }
-        else { str = String.join(" ", Arrays.copyOfRange(args, start, args.length)); }
-        
-        //Set string value
-        if (str == null) { type.remove(data, strKey, PersistentDataType.STRING, null); } 
-        else { type.set(data, strKey, PersistentDataType.STRING, str); }
       }
       
-      //Set primary value
-      if (primary == 0) { type.remove(data, alt.getPrimaryKey(), PersistentDataType.INTEGER, 0); } 
-      else { type.set(data, alt.getPrimaryKey(), PersistentDataType.INTEGER, primary); }
+      //Set the value
+      type.set(data, alt.getSecondaryKey(), PersistentDataType.INTEGER, secondary);
       
-      //Set secondary value
-      if (secondary == 0) { type.remove(data, alt.getSecondaryKey(), PersistentDataType.INTEGER, 0); } 
-      else { type.set(data, alt.getSecondaryKey(), PersistentDataType.INTEGER, secondary); }
+      //Increment the index for the next argument
+      index++;
     }
     
-    // RPG One Valued
-    else if (type instanceof RPGDataOneValued) {
-      
-      RPGDataOneValued alt = (RPGDataOneValued) type;
-      
-      //Fetch the primary value
-      if (args.length == 3) {
-        sender.sendMessage(
-          ChatColor.RED + "Error!" + ChatColor.GRAY + " Incomplete Command",
-          ChatColor.GRAY + "Please provide a valid " + ChatColor.YELLOW + "primary" + ChatColor.GRAY + " value.",
-          ChatColor.GRAY + "You may use the " + ChatColor.YELLOW + "~" + ChatColor.GRAY + " to prevent changes."
-          );
-        return;
-      }
-      
-      if (args[3] == "~") { primary = data.getOrDefault(alt.getPrimaryKey(), PersistentDataType.INTEGER, 0); }
-      else {
-         try { primary = Integer.parseInt(args[3]); }
-         catch(NumberFormatException e) {
-           sender.sendMessage(
-             ChatColor.RED + "Error!" + ChatColor.GRAY + " Parsing Error",
-             ChatColor.GRAY + "Failed to parse integer for " + ChatColor.YELLOW + "primary" + ChatColor.GRAY + " value."
-             );
-           return;
-         }
-      }
-      
-      // If this is also a RPGDataString
-      if (type instanceof RPGDataString) {
-        RPGDataString strType = (RPGDataString) type;
-        NamespacedKey strKey = strType.getStringKey();
-        int start = 4;
-        
-        //Fetch the string value
-        if (args.length == start) {
-          sender.sendMessage(
-            ChatColor.RED + "Error!" + ChatColor.GRAY + " Incomplete Command",
-            ChatColor.GRAY + "Please provide a valid " + ChatColor.YELLOW + "string" + ChatColor.GRAY + " value.",
-            ChatColor.GRAY + "You may use the " + ChatColor.YELLOW + "~" + ChatColor.GRAY + " to prevent changes."
-            );
-          return;
-        }
-        
-        if (args[start] == "~") { str = data.getOrDefault(strKey, PersistentDataType.STRING, null); }
-        else { str = String.join(" ", Arrays.copyOfRange(args, start, args.length)); }
-        
-        //Set string value
-        if (str == null) { type.remove(data, strKey, PersistentDataType.STRING, null); } 
-        else { type.set(data, strKey, PersistentDataType.STRING, str); }
-      }
-    }
-    
-    // RPG Data String
-    else if (type instanceof RPGDataString) {
-      RPGDataString strType = (RPGDataString) type;
-      NamespacedKey strKey = strType.getStringKey();
-      int start = 3;
-      
-      //Fetch the string value
-      if (args.length == start) {
-        sender.sendMessage(
-          ChatColor.RED + "Error!" + ChatColor.GRAY + " Incomplete Command",
+    // String Valued Types
+    if (type instanceof RPGDataString) {
+      // Check if we have too few values
+      if (args.length == index) {
+        sender.sendMessage(ChatColor.RED + "Error!" + ChatColor.GRAY + " Incomplete Command",
           ChatColor.GRAY + "Please provide a valid " + ChatColor.YELLOW + "string" + ChatColor.GRAY + " value.",
           ChatColor.GRAY + "You may use the " + ChatColor.YELLOW + "~" + ChatColor.GRAY + " to prevent changes."
           );
         return;
       }
       
-      if (args[start] == "~") { str = data.getOrDefault(strKey, PersistentDataType.STRING, null); }
-      else { str = String.join(" ", Arrays.copyOfRange(args, start, args.length)); }
+      //Fetch the alternate class
+      RPGDataString alt = ((RPGDataString) type);
       
-      //Set string value
-      if (str == null) { type.remove(data, strKey, PersistentDataType.STRING, null); } 
-      else { type.set(data, strKey, PersistentDataType.STRING, str); }
+      // Parse the value from the index
+      if (args[index] == "~") { string = (data == null ? null : type.get(data, alt.getStringKey(), PersistentDataType.STRING, null)); }
+      else { string = String.join(" ", Arrays.copyOfRange(args, index, args.length)); }
+      
+      //Set the value
+      type.set(data, alt.getStringKey(), PersistentDataType.STRING, string);
+      
+      //Increment the index for the next argument
+      index++;
     }
     
     //Success Message
@@ -783,5 +721,7 @@ public class Command_RPGPlayer implements CommandExecutor, TabCompleter {
     for(GenericRPGTypeManager<?> manager : plugin.getRPGDataTypeManager().getManagers()) {
       keys.addAll(manager.getKeys());
     }
+    
+    Collections.sort(keys);
   }
 }
