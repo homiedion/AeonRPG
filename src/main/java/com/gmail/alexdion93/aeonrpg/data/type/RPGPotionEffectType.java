@@ -129,9 +129,18 @@ public abstract class RPGPotionEffectType extends RPGDataType implements RPGData
       onPotionApply(entity, level, duration);
       
       //IF this isn't a palyer add them to the map
-      if (entity.getType() == EntityType.PLAYER) { return; }
-      entities.add(entity.getUniqueId());
+      registerEntity(entity);
     }
+  }
+  
+  /**
+   * Registers a non player living entity so that they trigger potion ticks 
+   * @param entity The entity being registered
+   */
+  public void registerEntity(LivingEntity entity) {
+    // Ignore if this is a player, otherwise add them to the map
+    if (entity.getType() == EntityType.PLAYER) { return; }
+    entities.add(entity.getUniqueId());
   }
 
   /**
