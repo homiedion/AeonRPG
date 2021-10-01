@@ -169,6 +169,7 @@ public class AeonRPG extends JavaPlugin {
    * Saves the plugin's data
    */
   private void save() {
+    entityManager.save();
   }
 
   /**
