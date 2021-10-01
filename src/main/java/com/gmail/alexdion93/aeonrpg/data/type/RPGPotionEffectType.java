@@ -134,7 +134,7 @@ public abstract class RPGPotionEffectType extends RPGDataType implements RPGData
   }
   
   /**
-   * Registers a non player living entity so that they trigger potion ticks 
+   * Registers a non player, living entity so that they trigger potion ticks 
    * @param entity The entity being registered
    */
   public void registerEntity(LivingEntity entity) {
