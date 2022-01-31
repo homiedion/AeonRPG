@@ -4,7 +4,6 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.Set;
 
-import org.bukkit.ChatColor;
 import org.bukkit.Effect;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
@@ -27,15 +26,8 @@ import org.bukkit.event.server.ServerLoadEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.persistence.PersistentDataContainer;
-import org.bukkit.persistence.PersistentDataHolder;
-
 import com.gmail.alexdion93.aeonrpg.AeonRPG;
 import com.gmail.alexdion93.aeonrpg.data.holder.RPGEntity;
-import com.gmail.alexdion93.aeonrpg.data.type.RPGAttributeType;
-import com.gmail.alexdion93.aeonrpg.data.type.RPGEnchantmentType;
-import com.gmail.alexdion93.aeonrpg.data.type.RPGPotionEffectType;
-import com.gmail.alexdion93.aeonrpg.data.type.RPGSkillType;
-import com.gmail.alexdion93.aeonrpg.data.type.RPGDataType.RPGDataAlignment;
 import com.gmail.alexdion93.aeonrpg.util.RPGDataUtil;
 
 /**
@@ -94,37 +86,6 @@ public class RPGEntityManager implements Listener {
   }
   
   /**
-   * Allows for creative move users to inspect a block by right clicking it.
-   * @param event The event being fired.
-   */
-  @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
-  public void onRightClickInspect(PlayerInteractEvent event) {
-    
-    // Ignore if not right clicking a block
-    if (event.getAction() != Action.RIGHT_CLICK_BLOCK) { return; } 
-    
-    // Ignore off hand
-    if (event.getHand() == EquipmentSlot.OFF_HAND) { return; }
-    
-    // Ignore if item isn't empty
-    Player player = event.getPlayer();
-    ItemStack item = player.getInventory().getItemInMainHand();
-    if (item != null && item.getType() != Material.AIR) { return; }
-    
-    // Ignore if no block
-    Block block = event.getClickedBlock();
-    if (block == null) { return; }
-    
-    //Fetch the data
-    if (!(block.getState() instanceof PersistentDataHolder)) { return; }
-    PersistentDataHolder holder = (PersistentDataHolder) block.getState();
-    PersistentDataContainer data = holder.getPersistentDataContainer();
-    
-    //Inspect
-    inspect(player, data);
-  }
-  
-  /**
    * Allows for creative move users to inspect an entity by right clicking it.
    * @param event The event being fired.
    */
@@ -147,86 +108,7 @@ public class RPGEntityManager implements Listener {
     PersistentDataContainer data = entity.getPersistentDataContainer();
     
     //Inspect
-    inspect(player, data);
-  }
-  
-  /**
-   * Inspects the data container and sends it to the player.
-   * @param player The target player.
-   * @param data The data being inspected.
-   */
-  public void inspect(Player player, PersistentDataContainer data) {
-  //Send the information
-    player.sendMessage(ChatColor.GOLD + "" + ChatColor.UNDERLINE + "        Inspection        ");
-    
-    //Attributes
-    player.sendMessage(ChatColor.GOLD + "  Attributes:");
-    for(RPGAttributeType type : plugin.getRPGDataTypeManager().getAttributeManager().getTypes()) {
-      
-      int flat = type.getFlat(data);
-      int scaling = type.getScaling(data);
-      if (flat == 0 && scaling == 0) { continue; }
-      
-      boolean isNegative = (type.getAlignment() == RPGDataAlignment.NEGATIVE);
-      String positive = (isNegative ? ChatColor.RED : ChatColor.GREEN) + "+";
-      String negative = (isNegative ? ChatColor.GREEN : ChatColor.RED) + "";
-      
-      player.sendMessage("    " + ChatColor.YELLOW + type.getDisplayName() + ": " + ChatColor.WHITE +
-          (flat > 0 ? positive : negative) + flat + ChatColor.WHITE
-          + " & " + (scaling > 0 ? positive : negative) + scaling + "%");
-    }
-    
-    //Enchantments
-    player.sendMessage(ChatColor.GOLD + "  Enchantments:");
-    for(RPGEnchantmentType type : plugin.getRPGDataTypeManager().getEnchantmentManager().getTypes()) {
-      
-      int level = type.getLevel(data);
-      
-      if (level == 0) { continue; }
-      
-      boolean isNegative = (type.getAlignment() == RPGDataAlignment.NEGATIVE);
-      String positive = (isNegative ? ChatColor.RED : ChatColor.GREEN) + "+";
-      String negative = (isNegative ? ChatColor.GREEN : ChatColor.RED) + "";
-      
-      player.sendMessage("    " + ChatColor.YELLOW + type.getDisplayName() + ": " + ChatColor.WHITE +
-          (level > 0 ? positive : negative) + "Lv." + level + ChatColor.WHITE);
-    }
-    
-    //Potion Effects
-    player.sendMessage(ChatColor.GOLD + "  Potion Effects:");
-    for(RPGPotionEffectType type : plugin.getRPGDataTypeManager().getPotionEffectManager().getTypes()) {
-      
-      int level = type.getLevel(data);
-      int duration = type.getDuration(data);
-      
-      if (level == 0 && duration == 0) { continue; }
-      
-      boolean isNegative = (type.getAlignment() == RPGDataAlignment.NEGATIVE);
-      String positive = (isNegative ? ChatColor.RED : ChatColor.GREEN) + "+";
-      String negative = (isNegative ? ChatColor.GREEN : ChatColor.RED) + "";
-      
-      player.sendMessage("    " + ChatColor.YELLOW + type.getDisplayName() + ": " + ChatColor.WHITE +
-          (level > 0 ? positive : negative) + "Lv." + level + ChatColor.WHITE
-          + " & " + (duration > 0 ? positive : negative) + duration + "s");
-    }
-    
-    //Skills
-    player.sendMessage(ChatColor.GOLD + "  Skills:");
-    for(RPGSkillType type : plugin.getRPGDataTypeManager().getSkillManager().getTypes()) {
-      
-      int level = type.getLevel(data);
-      int experience = type.getExperience(data);
-      
-      if (level == 0 && experience == 0) { continue; }
-      
-      boolean isNegative = (type.getAlignment() == RPGDataAlignment.NEGATIVE);
-      String positive = (isNegative ? ChatColor.RED : ChatColor.GREEN) + "+";
-      String negative = (isNegative ? ChatColor.GREEN : ChatColor.RED) + "";
-      
-      player.sendMessage("    " + ChatColor.YELLOW + type.getDisplayName() + ": " + ChatColor.WHITE +
-          (level > 0 ? positive : negative) + "Lv." + level + ChatColor.WHITE
-          + " & " + (experience > 0 ? positive : negative) + experience + "% Exp");
-    }
+    RPGDataUtil.inspect(player, data);
   }
   
   /**

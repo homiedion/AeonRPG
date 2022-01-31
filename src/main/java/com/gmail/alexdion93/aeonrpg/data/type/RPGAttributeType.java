@@ -2,6 +2,7 @@ package com.gmail.alexdion93.aeonrpg.data.type;
 
 import org.bukkit.ChatColor;
 import org.bukkit.NamespacedKey;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -40,6 +41,15 @@ public abstract class RPGAttributeType extends RPGDataType implements RPGDataTwo
   public RPGDataAlignment getAlignment() { return RPGDataAlignment.POSITIVE; }
   
   /**
+   * Returns the flat value present on an entity and if possible their equipment.
+   * @param entity The target entity.
+   * @return The total flat value found on the entity and their equipment.
+   */
+  public int getFlat(Entity entity) {
+    return getSum(entity, getPrimaryKey());
+  }
+
+  /**
    * Returns the flat value of the attribute.
    * @param container The persistent data container.
    * @return The flat value of the attribute.
@@ -47,7 +57,7 @@ public abstract class RPGAttributeType extends RPGDataType implements RPGDataTwo
   public int getFlat(PersistentDataContainer container) {
     return get(container, getPrimaryKey(), PersistentDataType.INTEGER, 0);
   }
-
+  
   /**
    * Returns the flat value of the attribute.
    * @param container The persistent data container.
@@ -64,6 +74,15 @@ public abstract class RPGAttributeType extends RPGDataType implements RPGDataTwo
   public NamespacedKey getPrimaryKey() { return primary; }
 
   /**
+   * Returns the scaling value present on an entity and if possible their equipment.
+   * @param entity The target entity.
+   * @return The total scaling value found on the entity and their equipment.
+   */
+  public int getScaling(Entity entity) {
+    return getSum(entity, getSecondaryKey());
+  }
+
+  /**
    * Returns the scaling value of the attribute.
    * @param container The persistent data container.
    * @return The scaling value of the attribute.
@@ -71,7 +90,7 @@ public abstract class RPGAttributeType extends RPGDataType implements RPGDataTwo
   public int getScaling(PersistentDataContainer container) {
     return get(container, getSecondaryKey(), PersistentDataType.INTEGER, 0);
   }
-
+  
   /**
    * Returns the scaling value of the attribute.
    * @param container The persistent data container.
@@ -183,15 +202,53 @@ public abstract class RPGAttributeType extends RPGDataType implements RPGDataTwo
     
     //Level String
     if (flat != 0) {
-      result += (flat > 0 ? positiveColor : negativeColor) + flat + " " + getDisplayName();
+      result += (flat > 0 ? positiveColor : negativeColor) + flat + ChatColor.GRAY + " " + getDisplayName();
     }
     
     //Sccaling String
     if (scale != 0) {
-      result += "\n" + (scale > 0 ? positiveColor: negativeColor) + scale + "% " + getDisplayName();
+      result += "\n" + (scale > 0 ? positiveColor: negativeColor) + scale + "% "+ ChatColor.GRAY + getDisplayName();
     }
     
     //Return
     return result.trim();
+  }
+  
+
+  /**
+   * Returns the total value of the attribute.
+   * @param entity The target entity.
+   * @return The total value of the attribute.
+   */
+  public int getTotal(Entity entity) {
+    
+    int flat = getFlat(entity);
+    int scaling = getScaling(entity);
+    double multiplier = 1 + (scaling / 100.0);
+    
+    return (int) (flat * multiplier);
+  }
+  
+  /**
+   * Returns the total value of the attribute.
+   * @param container The persistent data container.
+   * @return The total value of the attribute.
+   */
+  public int getTotal(PersistentDataContainer container) {
+    
+    int flat = getFlat(container);
+    int scaling = getScaling(container);
+    double multiplier = 1 + (scaling / 100.0);
+    
+    return (int) (flat * multiplier);
+  }
+  
+  /**
+   * Returns the total value of the attribute.
+   * @param container The persistent data container.
+   * @return The total value of the attribute.
+   */
+  public int getTotal(PersistentDataHolder holder) {
+    return getTotal(holder.getPersistentDataContainer());
   }
 }

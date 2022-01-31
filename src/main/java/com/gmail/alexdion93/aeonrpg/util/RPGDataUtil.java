@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.UUID;
 
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.Color;
 import org.bukkit.DyeColor;
 import org.bukkit.FireworkEffect;
@@ -20,6 +21,7 @@ import org.bukkit.block.banner.PatternType;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Axolotl;
+import org.bukkit.entity.Player;
 import org.bukkit.entity.TropicalFish;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemFlag;
@@ -55,11 +57,13 @@ import org.bukkit.potion.PotionType;
 import com.gmail.alexdion93.aeonrpg.AeonRPG;
 import com.gmail.alexdion93.aeonrpg.data.interfaces.*;
 import com.gmail.alexdion93.aeonrpg.data.type.*;
+import com.gmail.alexdion93.aeonrpg.data.type.RPGDataType.RPGDataAlignment;
 import com.gmail.alexdion93.aeonrpg.managers.*;
 
 public class RPGDataUtil {
 
   private static AeonRPG plugin;
+  
   /**
    * Copies persistent data between two containers
    * @param source The source of the data
@@ -1093,5 +1097,88 @@ public class RPGDataUtil {
     }
   }
 
+  
+  /**
+   * Inspects the data container and sends it to the player.
+   * @param player The target player.
+   * @param data The data being inspected.
+   */
+  public static void inspect(Player player, PersistentDataContainer data) {
+    //Send the information
+    player.sendMessage(ChatColor.GOLD + "" + ChatColor.UNDERLINE + "        Inspection        ");
+    
+    //Attributes
+    player.sendMessage(ChatColor.GOLD + "  Attributes:");
+    for(RPGAttributeType type : plugin.getRPGDataTypeManager().getAttributeManager().getTypes()) {
+      
+      int flat = type.getFlat(data);
+      int scaling = type.getScaling(data);
+      if (flat == 0 && scaling == 0) { continue; }
+      
+      boolean isNegative = (type.getAlignment() == RPGDataAlignment.NEGATIVE);
+      String positive = (isNegative ? ChatColor.RED : ChatColor.GREEN) + "+";
+      String negative = (isNegative ? ChatColor.GREEN : ChatColor.RED) + "";
+      
+      player.sendMessage("    " + ChatColor.YELLOW + type.getDisplayName() + ": " + ChatColor.WHITE +
+          (flat > 0 ? positive : negative) + flat + ChatColor.WHITE
+          + " & " + (scaling > 0 ? positive : negative) + scaling + "%");
+    }
+    
+    //Enchantments
+    player.sendMessage(ChatColor.GOLD + "  Enchantments:");
+    for(RPGEnchantmentType type : plugin.getRPGDataTypeManager().getEnchantmentManager().getTypes()) {
+      
+      int level = type.getLevel(data);
+      
+      if (level == 0) { continue; }
+      
+      boolean isNegative = (type.getAlignment() == RPGDataAlignment.NEGATIVE);
+      String positive = (isNegative ? ChatColor.RED : ChatColor.GREEN) + "+";
+      String negative = (isNegative ? ChatColor.GREEN : ChatColor.RED) + "";
+      
+      player.sendMessage("    " + ChatColor.YELLOW + type.getDisplayName() + ": " + ChatColor.WHITE +
+          (level > 0 ? positive : negative) + "Lv." + level + ChatColor.WHITE);
+    }
+    
+    //Potion Effects
+    player.sendMessage(ChatColor.GOLD + "  Potion Effects:");
+    for(RPGPotionEffectType type : plugin.getRPGDataTypeManager().getPotionEffectManager().getTypes()) {
+      
+      int level = type.getLevel(data);
+      int duration = type.getDuration(data);
+      
+      if (level == 0 && duration == 0) { continue; }
+      
+      boolean isNegative = (type.getAlignment() == RPGDataAlignment.NEGATIVE);
+      String positive = (isNegative ? ChatColor.RED : ChatColor.GREEN) + "+";
+      String negative = (isNegative ? ChatColor.GREEN : ChatColor.RED) + "";
+      
+      player.sendMessage("    " + ChatColor.YELLOW + type.getDisplayName() + ": " + ChatColor.WHITE +
+          (level > 0 ? positive : negative) + "Lv." + level + ChatColor.WHITE
+          + " & " + (duration > 0 ? positive : negative) + duration + "s");
+    }
+    
+    //Skills
+    player.sendMessage(ChatColor.GOLD + "  Skills:");
+    for(RPGSkillType type : plugin.getRPGDataTypeManager().getSkillManager().getTypes()) {
+      
+      int level = type.getLevel(data);
+      int experience = type.getExperience(data);
+      
+      if (level == 0 && experience == 0) { continue; }
+      
+      boolean isNegative = (type.getAlignment() == RPGDataAlignment.NEGATIVE);
+      String positive = (isNegative ? ChatColor.RED : ChatColor.GREEN) + "+";
+      String negative = (isNegative ? ChatColor.GREEN : ChatColor.RED) + "";
+      
+      player.sendMessage("    " + ChatColor.YELLOW + type.getDisplayName() + ": " + ChatColor.WHITE +
+          (level > 0 ? positive : negative) + "Lv." + level + ChatColor.WHITE
+          + " & " + (experience > 0 ? positive : negative) + experience + "% Exp");
+    }
+  }
+  
+  /**
+   * Private Constructor
+   */
   private RPGDataUtil() {}
 }

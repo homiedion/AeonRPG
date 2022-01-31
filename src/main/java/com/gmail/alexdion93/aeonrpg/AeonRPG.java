@@ -22,14 +22,21 @@ import com.gmail.alexdion93.aeonrpg.util.RPGDataUtil;
 
 /**
  * Plugin Main
+ * TODO: Implement commands to modify spawners
+ *  Add extra entities to the spawner
+ *  Modify spawner data
+ *  Replace data cloning that currently exists
+ * TODO: Transfer loot tables from LootControl???
+ *  Create new loot tables with rpg items
+ * 
  * @author Alex Dion
  */
 public class AeonRPG extends JavaPlugin {
 
-  private static final boolean DEBUG = true;
-  private static final String[] FOLDERS = {"Items", "Entities"};
+  private static final boolean DEBUG = false;
+  private static final String[] FOLDERS = {"Items", "Entities", "Loot Tables", "Spawners"};
   
-  private ArrowFireListener arrowListener;
+  private ArrowLaunchListener arrowListener;
   private RPGTypeManager typeManager;
   private RPGEntityManager entityManager;
 
@@ -56,7 +63,7 @@ public class AeonRPG extends JavaPlugin {
     RPGDataUtil.init(this);
     typeManager = new RPGTypeManager(this);
     entityManager = new RPGEntityManager(this);
-    arrowListener = new ArrowFireListener(this);
+    arrowListener = new ArrowLaunchListener(this);
     if (DEBUG) { getLogger().warning("DEBUG Mode Enabled"); }
     
     createData();
@@ -128,6 +135,7 @@ public class AeonRPG extends JavaPlugin {
     manager.registerEvents(typeManager, this);
     manager.registerEvents(entityManager, this);
     manager.registerEvents(arrowListener, this);
+    manager.registerEvents(new RPGBlockListener(), this);
     
     
     //Debug Type Registrations

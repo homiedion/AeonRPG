@@ -160,14 +160,7 @@ public class Command_RPGItem implements CommandExecutor, TabCompleter {
     
     // rpgitem modify <key>
     if (args.length == 2 && args[0].equalsIgnoreCase("modify")) {
-      List<String> result = new ArrayList<>();
-      
-      for(String key : keys) {
-        if (!args[1].isEmpty() && key.toLowerCase().contains(args[1])) { continue; }
-        result.add(key);
-      }
-      
-      return result;
+      return getMatchingKeys(args[1], keys);
     }
     
     // rpgitem modify <key> <value>
@@ -265,6 +258,7 @@ public class Command_RPGItem implements CommandExecutor, TabCompleter {
       sender.sendMessage(ChatColor.RED + "Error!" + ChatColor.GRAY + " " + e.getClass().getSimpleName(),
         ChatColor.GRAY + "See the console for a detailed report."
         );
+      return;
     }
     
     //Success Message
@@ -301,6 +295,7 @@ public class Command_RPGItem implements CommandExecutor, TabCompleter {
       player.sendMessage(ChatColor.RED + "Error!" + ChatColor.GRAY + " " + e.getClass().getSimpleName(),
         ChatColor.GRAY + "See the console for a detailed report."
         );
+      return;
     }
     
     //Success Message
@@ -335,6 +330,7 @@ public class Command_RPGItem implements CommandExecutor, TabCompleter {
         ChatColor.GRAY + "Please provide a valid " + ChatColor.YELLOW + "key" + ChatColor.GRAY + ".",
         ChatColor.YELLOW + "  /rpgitem" + ChatColor.GRAY + " modify <key> <value>"
         );
+      return;
     }
     
     // RPG Attributes
@@ -854,5 +850,28 @@ public class Command_RPGItem implements CommandExecutor, TabCompleter {
     }
     
     Collections.sort(keys);
+  }
+  
+  /**
+   * Returns any keys that contain the provided value.
+   * @param value The value we're searching for
+   * @param keys The keys that we're searching through.
+   * @return A list containing all keys that matched the criteria
+   */
+  private List<String> getMatchingKeys(String value, List<String> keys) {
+    ArrayList<String> result = new ArrayList<>();
+    
+    //If no keys were provided return something
+    if (keys == null || keys.isEmpty()) { return Arrays.asList("<None>"); }
+    
+    //If the value is empty return all keys
+    if (value == null || value.isEmpty()) { return keys; }
+    
+    //Filter the keys based on which ones contain the value
+    for(String key : keys) {
+      if (!key.toLowerCase().contains(value.toLowerCase())) { continue; }
+      result.add(key);
+    }
+    return result;
   }
 }

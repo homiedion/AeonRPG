@@ -99,7 +99,7 @@ public abstract class RPGSkillType extends RPGDataType implements RPGDataTwoValu
     int playerExperience = data.getOrDefault(alt, type, 0);
     
     //Fetch experience multiplier
-    double multiplier = 1 + (getEntitySum(player, getSecondaryKey()) / 100.0);
+    double multiplier = 1 + (getSum(player, getSecondaryKey()) / 100.0);
     
     //Add the experience to the player
     int levelsGained = 0;

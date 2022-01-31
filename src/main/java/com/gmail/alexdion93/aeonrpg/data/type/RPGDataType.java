@@ -3,7 +3,9 @@ package com.gmail.alexdion93.aeonrpg.data.type;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
+import org.bukkit.inventory.EntityEquipment;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
@@ -15,7 +17,6 @@ import org.bukkit.inventory.meta.CrossbowMeta;
 import org.bukkit.inventory.meta.ItemMeta;
 
 import com.gmail.alexdion93.aeonrpg.events.RPGDataFetchEvent;
-import com.gmail.alexdion93.inventoryequipevent.util.ItemUtil;
 
 /**
  * A base container for information regarding specific rpg data.
@@ -137,14 +138,14 @@ public abstract class RPGDataType {
     
     // If the primary item isn't shootable and isn't throwable
     // then we must be using the off hand.
-    if (!ItemUtil.isCategory(primary, ItemUtil.SHOOTABLE) && !ItemUtil.isCategory(primary, ItemUtil.THROWABLE)) {
+    if (!isShootable(primary) && !isThrowable(primary)) {
       primary = entity.getEquipment().getItemInOffHand();
       slot = EquipmentSlot.OFF_HAND;
     }
     
     // If the primary item is a shootable
     // then fetch the arrow
-    if (ItemUtil.isCategory(primary, ItemUtil.SHOOTABLE)) {
+    if (isShootable(primary)) {
 
       // Get the crossbow's loaded arrow (or just the first valid one since multiple
       // can be added)
@@ -166,7 +167,7 @@ public abstract class RPGDataType {
       }
 
       // Check the off hand for arrows
-      else if (ItemUtil.isCategory(entity.getEquipment().getItemInOffHand(), ItemUtil.ARROWS)) {
+      else if (isAmmo(entity.getEquipment().getItemInOffHand())) {
         secondary = entity.getEquipment().getItemInOffHand();
       }
 
@@ -174,7 +175,7 @@ public abstract class RPGDataType {
       else if (entity instanceof InventoryHolder) {
         InventoryHolder holder = (InventoryHolder) entity;
         for (ItemStack item : holder.getInventory().getContents()) {
-          if (!ItemUtil.isCategory(item, ItemUtil.ARROWS)) { continue; }
+          if (!isAmmo(item)) { continue; }
           secondary = item;
           break;
         }
@@ -189,7 +190,7 @@ public abstract class RPGDataType {
     }
     
     //Primary Value
-    if (primary != null && !isIgnoredItem(primary)) {
+    if (primary != null && !isIgnoredWhenHeld(primary)) {
       meta = primary.getItemMeta();
       if (meta != null) {
         sum += get(meta.getPersistentDataContainer(), key, PersistentDataType.INTEGER, 0);
@@ -197,7 +198,7 @@ public abstract class RPGDataType {
     }
     
     //Secondary Value
-    if (secondary != null && !isIgnoredItem(secondary)) {
+    if (secondary != null && !isIgnoredWhenHeld(secondary)) {
       meta = secondary.getItemMeta();
       if (meta != null) {
         sum += get(meta.getPersistentDataContainer(), key, PersistentDataType.INTEGER, 0);
@@ -213,53 +214,107 @@ public abstract class RPGDataType {
   }
   
   /**
-   * Returns the sum of all integer values across an entity's equipment.
-   * @param entity The target entity.
-   * @param key The target key.
-   * @return An integer.
+   * Returns if the item is shootable
+   * @param item The target item.
+   * @return True if its shootable.
    */
-  public int getEntitySum(LivingEntity entity, NamespacedKey key) { 
-    
-    //Variables
-    int sum = 0;
-    ItemStack item;
-    ItemMeta meta;
-    
-    //Entity Data
-    sum += get(entity.getPersistentDataContainer(), key, PersistentDataType.INTEGER, 0);
-    
-    //Armor
-    for(ItemStack i : entity.getEquipment().getArmorContents()) {
-      if (i == null) { continue; }
-      meta = i.getItemMeta();
-      if (meta == null) { continue; }
-      sum += get(meta.getPersistentDataContainer(), key, PersistentDataType.INTEGER, 0);
+  private boolean isShootable(ItemStack item) {
+    switch(item.getType()) {
+      case BOW: return true;
+      case CROSSBOW: return true;
+      default: return false;
     }
+  }
+  
+  /**
+   * Returns if the item is an arrow
+   * @param item The target item.
+   * @return True if its an arrow.
+   */
+  private boolean isAmmo(ItemStack item) {
+    switch(item.getType()) {
+      // Arrows
+      case ARROW:
+      case TIPPED_ARROW:
+      case SPECTRAL_ARROW:
+        
+      // Fireworks
+      case FIREWORK_ROCKET:
+        return true;
+      
+      default:
+        return false;
+    }
+  }
+  
+  /**
+   * Returns if the item is considered throwable.
+   * @param item The target item.
+   * @return True if its thorwable.
+   */
+  private boolean isThrowable(ItemStack item) {
+    switch(item.getType()) {
+      case EGG:
+      case ENDER_PEARL:
+      case ENDER_EYE:
+      case FIREWORK_ROCKET:
+      case SNOWBALL:
+      case SPLASH_POTION:
+      case LINGERING_POTION:
+      case EXPERIENCE_BOTTLE:
+      case TRIDENT:
+        return true;
+      default:
+        return false;
+    }
+  }
+  
+  /**
+   * Collects a sum of all values of the provided key across the entity and its equipment. 
+   * @param entity The entity being targetted
+   * @param key The key being searched for.
+   * @return An integer representing the sum of all found values.
+   */
+  public int getSum(Entity entity, NamespacedKey key) {
     
-    //Main Hand
-    item = entity.getEquipment().getItemInMainHand();
-    if (item != null && !isIgnoredItem(item)) {
-      meta = item.getItemMeta();
-      if (meta != null) {
-        sum += get(meta.getPersistentDataContainer(), key, PersistentDataType.INTEGER, 0);
+    // Fetch the value on the entity itself
+    int sum = get(entity, key, PersistentDataType.INTEGER, 0);
+    
+    // If the entity has the potential for equipment return the sum
+    if (entity instanceof LivingEntity) {
+      LivingEntity living = (LivingEntity) entity;
+      EntityEquipment equipment = living.getEquipment(); 
+      
+      // Loop all equipment
+      for(EquipmentSlot slot : EquipmentSlot.values()) {
+        
+        //Skip if the item has no meta
+        ItemStack item = equipment.getItem(slot);
+        if (item == null || item.getItemMeta() == null) {
+          continue;          
+        }
+        
+        // Skip this item if we're holding it and its armor or ammo
+        if (slot == EquipmentSlot.HAND || slot == EquipmentSlot.OFF_HAND) {
+          if (isIgnoredWhenHeld(item)) {
+            continue;
+          }
+        }
+        
+        // Fetch the value from the item meta.
+        ItemMeta meta = item.getItemMeta();
+        int value = get(meta, key, PersistentDataType.INTEGER, 0);
+        
+        // Add to the sum
+        sum += value;
       }
+      
+      // Return the sum
+      return sum;
     }
     
-    //Off Hand
-    item = entity.getEquipment().getItemInMainHand();
-    if (item != null && !isIgnoredItem(item)) {
-      meta = item.getItemMeta();
-      if (meta != null) {
-        sum += get(meta.getPersistentDataContainer(), key, PersistentDataType.INTEGER, 0);
-      }
-    }
-    
-    //Throw an event to allow for other plugins to hook into.
-    RPGDataFetchEvent event = new RPGDataFetchEvent(entity, this, sum);
-    Bukkit.getPluginManager().callEvent(event);
-    
-    //Return result
-    return event.getValue();
+    // Return the sum
+    return sum;
   }
   
   /**
@@ -293,10 +348,72 @@ public abstract class RPGDataType {
    * @param item The target itemstack.
    * @return True or false.
    */
-  private boolean isIgnoredItem(ItemStack item) {
-    return (ItemUtil.isCategory(item, ItemUtil.HELMETS) || ItemUtil.isCategory(item, ItemUtil.CHESTPLATES)
-        || ItemUtil.isCategory(item, ItemUtil.LEGGINGS) || ItemUtil.isCategory(item, ItemUtil.BOOTS)
-        || ItemUtil.isCategory(item, ItemUtil.ARROWS));
+  private boolean isIgnoredWhenHeld(ItemStack item) {
+    return (isArmor(item) || isAmmo(item));
+  }
+  
+  /**
+   * Returns if the item is considered armor.
+   * Skulls and pumpkins are allowed to grant their boons when held.
+   * @param item The target item.
+   * @return True if its thorwable.
+   */
+  private boolean isArmor(ItemStack item) {
+    switch(item.getType()) {
+      //Leather
+      case LEATHER_HELMET:
+      case LEATHER_CHESTPLATE:
+      case LEATHER_LEGGINGS:
+      case LEATHER_BOOTS:
+      
+      //Chainmail
+      case CHAINMAIL_HELMET:
+      case CHAINMAIL_CHESTPLATE:
+      case CHAINMAIL_LEGGINGS:
+      case CHAINMAIL_BOOTS:
+      
+      //Iron
+      case IRON_HELMET:
+      case IRON_CHESTPLATE:
+      case IRON_LEGGINGS:
+      case IRON_BOOTS:
+      
+      //Gold
+      case GOLDEN_HELMET:
+      case GOLDEN_CHESTPLATE:
+      case GOLDEN_LEGGINGS:
+      case GOLDEN_BOOTS:
+      
+      //Diamond
+      case DIAMOND_HELMET:
+      case DIAMOND_CHESTPLATE:
+      case DIAMOND_LEGGINGS:
+      case DIAMOND_BOOTS:
+      
+      //Netherite
+      case NETHERITE_HELMET:
+      case NETHERITE_CHESTPLATE:
+      case NETHERITE_LEGGINGS:
+      case NETHERITE_BOOTS:
+      
+      //Skulls
+      /*
+      case SKELETON_SKULL:
+      case WITHER_SKELETON_SKULL:
+      case CREEPER_HEAD:
+      case DRAGON_HEAD:
+      case PLAYER_HEAD:
+      case ZOMBIE_HEAD:
+      */
+      
+      //Other
+      case TURTLE_HELMET:
+      //case CARVED_PUMPKIN:
+      
+        return true;
+      //Default
+      default: return false;
+    }
   }
   
   /**

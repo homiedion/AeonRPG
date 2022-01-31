@@ -108,6 +108,7 @@ public class Command_RPGPlayer implements CommandExecutor, TabCompleter {
           ChatColor.GRAY + "Please provide a valid " + ChatColor.YELLOW + "key" + ChatColor.GRAY + ".",
           ChatColor.YELLOW + "  /" + command.getName() + ChatColor.GRAY + " set <key> <value>"
           );
+        return true;
       }
       
       // RPG Attributes
@@ -172,14 +173,7 @@ public class Command_RPGPlayer implements CommandExecutor, TabCompleter {
     
     // rpgplayer <player> set <key>
     if (args.length == 3 && args[1].equalsIgnoreCase("set")) {
-      List<String> result = new ArrayList<String>();
-      
-      for(String key : keys) {
-        if (!args[2].isEmpty() && key.toLowerCase().contains(args[2])) { continue; }
-        result.add(key);
-      }
-      
-      return result;
+      return getMatchingKeys(args[2], keys);
     }
     
     // rpgplayer <player> set <key> <value>
@@ -723,5 +717,28 @@ public class Command_RPGPlayer implements CommandExecutor, TabCompleter {
     }
     
     Collections.sort(keys);
+  }
+  
+  /**
+   * Returns any keys that contain the provided value.
+   * @param value The value we're searching for
+   * @param keys The keys that we're searching through.
+   * @return A list containing all keys that matched the criteria
+   */
+  private List<String> getMatchingKeys(String value, List<String> keys) {
+    ArrayList<String> result = new ArrayList<>();
+    
+    //If no keys were provided return something
+    if (keys == null || keys.isEmpty()) { return Arrays.asList("<None>"); }
+    
+    //If the value is empty return all keys
+    if (value == null || value.isEmpty()) { return keys; }
+    
+    //Filter the keys based on which ones contain the value
+    for(String key : keys) {
+      if (!key.toLowerCase().contains(value.toLowerCase())) { continue; }
+      result.add(key);
+    }
+    return result;
   }
 }

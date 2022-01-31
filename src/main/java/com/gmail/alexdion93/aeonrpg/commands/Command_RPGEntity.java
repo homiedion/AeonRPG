@@ -615,7 +615,7 @@ public class Command_RPGEntity implements CommandExecutor, TabCompleter {
     }
     
     //Success
-    plugin.getRPGEntityManager().add(key, new RPGEntity(plugin, type));
+    plugin.getRPGEntityManager().add(key, new RPGEntity(type));
     sender.sendMessage(
       ChatColor.GREEN + "Success!" + ChatColor.GRAY + " Added new rpg entity \"" + key + "\""
       );

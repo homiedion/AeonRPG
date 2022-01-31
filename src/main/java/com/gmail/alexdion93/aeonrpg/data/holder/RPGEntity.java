@@ -1,6 +1,7 @@
 package com.gmail.alexdion93.aeonrpg.data.holder;
 
 import java.util.HashMap;
+import java.util.Map.Entry;
 
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -19,21 +20,20 @@ import com.gmail.alexdion93.aeonrpg.managers.RPGTypeManager;
 
 public class RPGEntity {
   
-  private AeonRPG plugin;
   private EntityType type;
-  private HashMap<String, RPGAttributeData> attributes;
-  private HashMap<String, RPGEnchantmentData> enchantments;
-  private HashMap<String, RPGGenericData> generics;
-  private HashMap<String, RPGPotionEffectData> potions;
-  private HashMap<String, RPGSkillData> skills;
+  private HashMap<RPGAttributeType, RPGAttributeData> attributes;
+  private HashMap<RPGEnchantmentType, RPGEnchantmentData> enchantments;
+  private HashMap<RPGDataType, RPGGenericData> generics;
+  private HashMap<RPGPotionEffectType, RPGPotionEffectData> potions;
+  private HashMap<RPGSkillType, RPGSkillData> skills;
   private boolean dirty;
   
   /**
-   * Load Constructor
-   * @param section The configuration section we're loading from.
+   * Load constructor
+   * @param plugin The aeon rpg plugin we're loading types from
+   * @param section The configuration section
    */
   public RPGEntity(AeonRPG plugin, ConfigurationSection section) {
-    this.plugin = plugin;
     attributes = new HashMap<>();
     enchantments = new HashMap<>();
     generics = new HashMap<>();
@@ -47,8 +47,7 @@ public class RPGEntity {
    * Constructor
    * @param type The entity type.
    */
-  public RPGEntity(AeonRPG plugin, EntityType type) {
-    this.plugin = plugin;
+  public RPGEntity(EntityType type) {
     this.type = type;
     dirty = true;
   }
@@ -59,40 +58,35 @@ public class RPGEntity {
    * @param holder The persistent data holder we're applying this to.
    */
   public void apply(PersistentDataHolder holder) {
-    //Variables
-    RPGTypeManager manager = plugin.getRPGDataTypeManager();
     
     //Attributes
-    if (attributes != null) for(String key: attributes.keySet()) {
+    if (attributes != null) for(RPGAttributeType type : attributes.keySet()) {
       //Type Check
-      RPGAttributeType type = manager.getAttributeManager().get(key);
       if (type == null) { continue; }
       
       //Apply Data
-      RPGAttributeData data = attributes.get(key);
+      RPGAttributeData data = attributes.get(type);
       type.setFlat(holder, data.getFlat());
       type.setScaling(holder, data.getScaling());
     }
     
     //Enchantments
-    if (enchantments != null) for(String key: enchantments.keySet()) {
+    if (enchantments != null) for(RPGEnchantmentType type : enchantments.keySet()) {
       //Type Check
-      RPGEnchantmentType type = manager.getEnchantmentManager().get(key);
       if (type == null) { continue; }
       
       //Apply Data
-      RPGEnchantmentData data = enchantments.get(key);
+      RPGEnchantmentData data = enchantments.get(type);
       type.setLevel(holder, data.getLevel());
     }
     
     //Generics
-    if (generics != null) for(String key: generics.keySet()) {
+    if (generics != null) for(RPGDataType type : generics.keySet()) {
       //Type Check
-      RPGDataType type = manager.getGenericManager().get(key);
       if (type == null) { continue; }
       
       //Apply data
-      RPGGenericData data = generics.get(key);
+      RPGGenericData data = generics.get(type);
       if (type instanceof RPGDataOneValued) {
         RPGDataOneValued alt = (RPGDataOneValued) type;
         NamespacedKey altKey = alt.getPrimaryKey();
@@ -123,24 +117,22 @@ public class RPGEntity {
     }
     
     //Potions
-    if (potions != null) for(String key: potions.keySet()) {
+    if (potions != null) for(RPGPotionEffectType type : potions.keySet()) {
       //Type Check
-      RPGPotionEffectType type = manager.getPotionEffectManager().get(key);
       if (type == null) { continue; }
       
       //Apply Data
-      RPGPotionEffectData data = potions.get(key);
+      RPGPotionEffectData data = potions.get(type);
       type.apply(holder, data.getLevel(), data.getDuration());
     }
     
     //Skills
-    if (skills != null) for(String key: skills.keySet()) {
+    if (skills != null) for(RPGSkillType type : skills.keySet()) {
     //Type Check
-      RPGSkillType type = manager.getSkillManager().get(key);
       if (type == null) { continue; }
       
       //Apply Data
-      RPGSkillData data = skills.get(key);
+      RPGSkillData data = skills.get(type);
       type.setLevel(holder, data.getLevel());
       type.setExperience(holder, data.getExperience());
     }
@@ -202,6 +194,8 @@ public class RPGEntity {
    * @param section The configuration section
    */
   public void load(AeonRPG plugin, ConfigurationSection section) {
+    dirty = false;
+    
     //Load Entity Data
     type = EntityType.UNKNOWN;
     try { type = EntityType.valueOf(section.getString("type", "UNKNOWN").toUpperCase()); }
@@ -279,8 +273,9 @@ public class RPGEntity {
     section.set("type", type.name());
     
     //Attributes
-    if (attributes != null) for(String key : attributes.keySet()) {
-      RPGAttributeData data = attributes.get(key);
+    if (attributes != null) for(Entry<RPGAttributeType, RPGAttributeData> entry : attributes.entrySet()) {
+      RPGAttributeType key = entry.getKey();
+      RPGAttributeData data = entry.getValue();
       
       if (data.getFlat() == 0) { section.set(key + ".flat", null); }
       else { section.set(key + ".flat", data.getFlat()); }
@@ -290,16 +285,18 @@ public class RPGEntity {
     }
     
     //Enchantments
-    if (enchantments != null) for(String key : enchantments.keySet()) {
-      RPGEnchantmentData data = enchantments.get(key);
+    if (enchantments != null) for(Entry<RPGEnchantmentType, RPGEnchantmentData> entry : enchantments.entrySet()) {
+      RPGEnchantmentType key = entry.getKey();
+      RPGEnchantmentData data = entry.getValue();
       
       if (data.getLevel() <= 0) { section.set(key + ".level", null); }
       else { section.set(key + ".level", data.getLevel()); }
     }
     
     //Generics
-    if (generics != null) for(String key : generics.keySet()) {
-      RPGGenericData data = generics.get(key);
+    if (generics != null) for(Entry<RPGDataType, RPGGenericData> entry : generics.entrySet()) {
+      RPGDataType key = entry.getKey();
+      RPGGenericData data = entry.getValue();
       
       int primary = data.getPrimary();
       int secondary = data.getSecondary();
@@ -311,8 +308,9 @@ public class RPGEntity {
     }
     
     //Potions
-    if (potions != null) for(String key : potions.keySet()) {
-      RPGPotionEffectData data = potions.get(key);
+    if (potions != null) for(Entry<RPGPotionEffectType, RPGPotionEffectData> entry : potions.entrySet()) {
+      RPGPotionEffectType key = entry.getKey();
+      RPGPotionEffectData data = entry.getValue();
       
       if (data.getLevel() <= 0) { section.set(key + ".level", null); }
       else { section.set(key + ".level", data.getLevel()); }
@@ -322,8 +320,9 @@ public class RPGEntity {
     }
     
     //Skills
-    if (skills != null) for(String key : skills.keySet()) {
-      RPGSkillData data = skills.get(key);
+    if (skills != null) for(Entry<RPGSkillType, RPGSkillData> entry : skills.entrySet()) {
+      RPGSkillType key = entry.getKey();
+      RPGSkillData data = entry.getValue();
       
       if (data.getLevel() <= 0) { section.set(key + ".level", null); }
       else { section.set(key + ".level", data.getLevel()); }
@@ -345,9 +344,8 @@ public class RPGEntity {
     dirty = true;
     
     //Set the data
-    String key = type.getDataKey();
-    if (flat == 0 && scaling == 0) { attributes.remove(key); }
-    else { attributes.put(key, new RPGAttributeData(flat, scaling)); }
+    if (flat == 0 && scaling == 0) { attributes.remove(type); }
+    else { attributes.put(type, new RPGAttributeData(flat, scaling)); }
   }
   
   /**
@@ -363,9 +361,8 @@ public class RPGEntity {
     dirty = true;
     
     //Set the data
-    String key = type.getDataKey();
-    if (primary == 0 && secondary == 0 && string == null) { generics.remove(key); }
-    else { generics.put(key, new RPGGenericData(primary, secondary, string)); }
+    if (primary == 0 && secondary == 0 && string == null) { generics.remove(type); }
+    else { generics.put(type, new RPGGenericData(primary, secondary, string)); }
   }
   
   /**
@@ -379,9 +376,8 @@ public class RPGEntity {
     dirty = true;
     
     //Set the data
-    String key = type.getDataKey();
-    if (level <= 0) { enchantments.remove(key); }
-    else { enchantments.put(key, new RPGEnchantmentData(level)); }
+    if (level <= 0) { enchantments.remove(type); }
+    else { enchantments.put(type, new RPGEnchantmentData(level)); }
   }
   
   /**
@@ -396,9 +392,8 @@ public class RPGEntity {
     dirty = true;
     
     //Set the data
-    String key = type.getDataKey();
-    if (level <= 0 && duration <= 0) { potions.remove(key); }
-    else { potions.put(key, new RPGPotionEffectData(level, duration)); }
+    if (level <= 0 && duration <= 0) { potions.remove(type); }
+    else { potions.put(type, new RPGPotionEffectData(level, duration)); }
   }
   
   /**
@@ -413,9 +408,8 @@ public class RPGEntity {
     dirty = true;
     
     //Set the data
-    String key = type.getDataKey();
-    if (level <= 0 && experience <= 0) { skills.remove(key); }
-    else { skills.put(key, new RPGSkillData(level, experience)); }
+    if (level <= 0 && experience <= 0) { skills.remove(type); }
+    else { skills.put(type, new RPGSkillData(level, experience)); }
   }
   
   /**
@@ -431,44 +425,6 @@ public class RPGEntity {
     apply(entity);
   }
   
-  @Override
-  public String toString() {
-    String str = "";
-    
-    //Variables
-    RPGTypeManager manager = plugin.getRPGDataTypeManager();
-    
-    //Attributes
-    for(String key: attributes.keySet()) {
-      //Type Check
-      RPGAttributeType type = manager.getAttributeManager().get(key);
-      if (type == null) { continue; }
-    }
-    
-    //Enchantments
-    for(String key: attributes.keySet()) {
-      //Type Check
-      RPGEnchantmentType type = manager.getEnchantmentManager().get(key);
-      if (type == null) { continue; }
-    }
-    
-    //Potions
-    for(String key: attributes.keySet()) {
-      //Type Check
-      RPGPotionEffectType type = manager.getPotionEffectManager().get(key);
-      if (type == null) { continue; }
-    }
-    
-    //Skills
-    for(String key: attributes.keySet()) {
-    //Type Check
-      RPGSkillType type = manager.getSkillManager().get(key);
-      if (type == null) { continue; }
-    }
-    
-    return str;
-  }
-  
   /**
    * Sends internal data to the command sender.
    * @param sender The command sender.
@@ -476,37 +432,42 @@ public class RPGEntity {
   public void inspect(CommandSender sender) {
     // Attributes
     sender.sendMessage(ChatColor.GOLD + "  Attributes:");
-    if (!attributes.isEmpty()) for(String key : attributes.keySet()) {
-      RPGAttributeData data = attributes.get(key);
-      sender.sendMessage("    " + key + ": " + data.getFlat() + " & " + data.getScaling() + "%");
+    if (!attributes.isEmpty()) for(Entry<RPGAttributeType, RPGAttributeData> entry : attributes.entrySet()) {
+      RPGAttributeType key = entry.getKey();
+      RPGAttributeData data = entry.getValue();
+      sender.sendMessage("    " + key.getDataKey() + ": " + data.getFlat() + " & " + data.getScaling() + "%");
     }
     
     // Enchantments
     sender.sendMessage(ChatColor.GOLD + "  Enchantments");
-    if (!enchantments.isEmpty()) for(String key : enchantments.keySet()) {
-      RPGEnchantmentData data = enchantments.get(key);
-      sender.sendMessage("    " + key + ": Lv." + data.getLevel());
+    if (!enchantments.isEmpty()) for(Entry<RPGEnchantmentType, RPGEnchantmentData> entry : enchantments.entrySet()) {
+      RPGEnchantmentType key = entry.getKey();
+      RPGEnchantmentData data = entry.getValue();
+      sender.sendMessage("    " + key.getDataKey() + ": Lv." + data.getLevel());
     }
     
     //Generics
     sender.sendMessage(ChatColor.GOLD + "  Generics:");
-    if (!generics.isEmpty()) for(String key : generics.keySet()) {
-      RPGGenericData data = generics.get(key);
-      sender.sendMessage("    " + key + ": " + data.getPrimary() + " & " + data.getSecondary() + " & " + data.getString());
+    if (!generics.isEmpty()) for(Entry<RPGDataType, RPGGenericData> entry : generics.entrySet()) {
+      RPGDataType key = entry.getKey();
+      RPGGenericData data = entry.getValue();
+      sender.sendMessage("    " + key.getDataKey() + ": " + data.getPrimary() + " & " + data.getSecondary() + " & " + data.getString());
     }
     
     // Potions
     sender.sendMessage(ChatColor.GOLD + "  Potions:");
-    if (!potions.isEmpty()) for(String key : potions.keySet()) {
-      RPGPotionEffectData data = potions.get(key);
-      sender.sendMessage("    " + key + ": Lv." + data.getLevel() + " & " + data.getDuration() + "s ");
+    if (!potions.isEmpty()) for(Entry<RPGPotionEffectType, RPGPotionEffectData> entry : potions.entrySet()) {
+      RPGPotionEffectType key = entry.getKey();
+      RPGPotionEffectData data = entry.getValue();
+      sender.sendMessage("    " + key.getDataKey() + ": Lv." + data.getLevel() + " & " + data.getDuration() + "s ");
     }
     
     // Skills
     sender.sendMessage(ChatColor.GOLD + "  Skills:");
-    if (!skills.isEmpty()) for(String key : skills.keySet()) {
-      RPGSkillData data = skills.get(key);
-      sender.sendMessage("    " + key + ": Lv." + data.getLevel() + " & " + data.getExperience() + " exp");
+    if (!skills.isEmpty()) for(Entry<RPGSkillType, RPGSkillData> entry : skills.entrySet()) {
+      RPGSkillType key = entry.getKey();
+      RPGSkillData data = entry.getValue();
+      sender.sendMessage("    " + key.getDataKey() + ": Lv." + data.getLevel() + " & " + data.getExperience() + " exp");
     }
   }
 }

@@ -1,12 +1,11 @@
 name: AeonRPG
 main: com.gmail.alexdion93.aeonrpg.AeonRPG
-version: 0.8.0
+version: 0.9.0
 description: Adds a framework for RPG elements into Minecraft.
 api-version: 1.15
 load: POSTWORLD
 author: alexdion93@gmail.com
 website: www.github.com/homiedion
-depend: [InventoryEquipEventPlugin]
 prefix: AeonRPG
 softdepend: []
 loadbefore: []
